@@ -1,0 +1,14 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/indicators",
+      "schedule": "0 9 * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/webhooks/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }]
+    }
+  ]
+}
