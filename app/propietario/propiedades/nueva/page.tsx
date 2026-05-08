@@ -1,5 +1,3 @@
-"use server";
-
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -49,7 +47,7 @@ const REGIONES_CHILE = [
   "Los Ríos", "Los Lagos", "Aysén", "Magallanes",
 ];
 
-export default function NuevaPropiedadPage() {
+export default async function NuevaPropiedadPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       {/* Breadcrumb */}
