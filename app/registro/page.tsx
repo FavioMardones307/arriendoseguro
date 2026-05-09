@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { RegistroForm } from "@/components/auth/RegistroForm";
 import { Home } from "lucide-react";
 import Link from "next/link";
@@ -27,7 +28,9 @@ export default function RegistroPage() {
             ¿Ya tienes cuenta?{" "}
             <Link href="/login" className="text-[#1E40AF] font-semibold hover:underline">Inicia sesión</Link>
           </p>
-          <RegistroForm />
+          <Suspense fallback={<div className="h-48 flex items-center justify-center text-sm text-[#94A3B8]">Cargando…</div>}>
+            <RegistroForm />
+          </Suspense>
         </div>
       </div>
     </div>
