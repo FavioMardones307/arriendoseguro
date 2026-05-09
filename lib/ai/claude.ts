@@ -76,8 +76,10 @@ async function llamarClaude(
         throw new Error(`Claude API error ${res.status}: ${errorBody}`);
       }
 
-      // @ts-expect-error: Anthropic API response no tiene tipos oficiales instalados
-      const data = await res.json();
+      const data = await res.json() as {
+        content?: Array<{ text?: string }>;
+        usage?: { input_tokens?: number; output_tokens?: number };
+      };
 
       const contenido = data.content?.[0]?.text ?? "";
       const inputTokens = data.usage?.input_tokens ?? 0;

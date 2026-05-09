@@ -33,7 +33,7 @@ const schemaRenta = z.object({
 });
 
 const schemaDuracion = z.object({
-  tipo: z.enum(["plazo_fijo", "mes_a_mes", "indefinido"]),
+  tipo_duracion: z.enum(["plazo_fijo", "mes_a_mes", "indefinido"]),
   fecha_inicio: z.string().min(1, "Selecciona fecha de inicio"),
   fecha_fin: z.string().optional(),
   reajuste: z.enum(["ipc_semestral", "ipc_anual", "uf", "sin_reajuste"]),
@@ -253,13 +253,13 @@ function PasoRenta({ form }: { form: ReturnType<typeof useForm<DatosContrato>> }
 // ── Paso 4: Duración ───────────────────────────────────────────────────
 function PasoDuracion({ form }: { form: ReturnType<typeof useForm<DatosContrato>> }) {
   const { register, watch } = form;
-  const tipo = watch("tipo");
+  const tipo_duracion = watch("tipo_duracion");
   return (
     <div className="space-y-4">
       <h2 className="font-semibold text-[#0F172A] text-lg">Duración del contrato</h2>
       <div>
         <label htmlFor="tipo-contrato" className="label">Tipo de contrato</label>
-        <select id="tipo-contrato" className="input-base" {...register("tipo")}>
+        <select id="tipo-contrato" className="input-base" {...register("tipo_duracion")}>
           <option value="plazo_fijo">Plazo fijo</option>
           <option value="mes_a_mes">Mes a mes</option>
           <option value="indefinido">Indefinido</option>
@@ -269,7 +269,7 @@ function PasoDuracion({ form }: { form: ReturnType<typeof useForm<DatosContrato>
         <label htmlFor="fecha-inicio" className="label">Fecha de inicio</label>
         <input id="fecha-inicio" type="date" className="input-base" {...register("fecha_inicio")} />
       </div>
-      {tipo === "plazo_fijo" && (
+      {tipo_duracion === "plazo_fijo" && (
         <div>
           <label htmlFor="fecha-fin" className="label">Fecha de término</label>
           <input id="fecha-fin" type="date" className="input-base" {...register("fecha_fin")} />
@@ -355,7 +355,7 @@ function PasoRevision({ datos, generando }: { datos: Partial<DatosContrato>; gen
           { label: "Arrendatario", valor: `${datos.arrendatario_nombre ?? ""} · ${datos.arrendatario_rut ?? ""}` },
           { label: "Propiedad", valor: `${datos.direccion ?? ""}, ${datos.comuna ?? ""}` },
           { label: "Renta", valor: `${datos.monto ?? ""} ${datos.moneda ?? ""} — día ${datos.dia_pago ?? ""}` },
-          { label: "Tipo", valor: datos.tipo ?? "" },
+          { label: "Tipo", valor: datos.tipo_duracion ?? "" },
           { label: "Inicio", valor: datos.fecha_inicio ?? "" },
           { label: "Garantía", valor: `${datos.garantia_meses ?? 0} mes(es)` },
         ].map(({ label, valor }) => (
@@ -388,7 +388,8 @@ export function ContratoWizard() {
     defaultValues: {
       moneda: "CLP",
       dia_pago: 5,
-      tipo: "plazo_fijo",
+      tipo: "departamento",
+      tipo_duracion: "plazo_fijo",
       reajuste: "sin_reajuste",
       garantia_meses: 1,
       permite_mascotas: false,
@@ -408,7 +409,7 @@ export function ContratoWizard() {
     const datos = form.getValues();
     const result = schema.safeParse(datos);
     if (!result.success) {
-      result.error.errors.forEach((err) => {
+      result.error.issues.forEach((err) => {
         const field = err.path[0] as keyof DatosContrato;
         if (field) form.setError(field, { message: err.message });
       });

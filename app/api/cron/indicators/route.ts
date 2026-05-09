@@ -31,8 +31,7 @@ export async function GET(request: NextRequest) {
         next: { revalidate: 3600 },
       });
       if (resUF.ok) {
-        // @ts-expect-error: respuesta sin tipos
-        const dataUF = await resUF.json();
+        const dataUF = await resUF.json() as { serie?: Array<{ valor?: number }> };
         resultados["uf"] = dataUF?.serie?.[0]?.valor ?? null;
       }
     } catch {
@@ -45,8 +44,7 @@ export async function GET(request: NextRequest) {
         next: { revalidate: 3600 },
       });
       if (resIPC.ok) {
-        // @ts-expect-error: respuesta sin tipos
-        const dataIPC = await resIPC.json();
+        const dataIPC = await resIPC.json() as { serie?: Array<{ valor?: number }> };
         resultados["ipc"] = dataIPC?.serie?.[0]?.valor ?? null;
       }
     } catch {
@@ -59,8 +57,7 @@ export async function GET(request: NextRequest) {
         next: { revalidate: 3600 },
       });
       if (resUTM.ok) {
-        // @ts-expect-error: respuesta sin tipos
-        const dataUTM = await resUTM.json();
+        const dataUTM = await resUTM.json() as { serie?: Array<{ valor?: number }> };
         resultados["utm"] = dataUTM?.serie?.[0]?.valor ?? null;
       }
     } catch {
@@ -78,12 +75,13 @@ export async function GET(request: NextRequest) {
     // ── Guardar en base de datos ───────────────────────────────
     const supabase = await createAdminClient();
 
-    const { error } = await supabase.from("economic_indicators").upsert(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).from("economic_indicators").upsert(
       {
         fecha: hoy,
-        uf: String(resultados["uf"]),
-        ipc: String(resultados["ipc"]),
-        utm: String(resultados["utm"]),
+        uf: Number(resultados["uf"]),
+        ipc: Number(resultados["ipc"]),
+        utm: Number(resultados["utm"]),
       },
       { onConflict: "fecha" }
     );

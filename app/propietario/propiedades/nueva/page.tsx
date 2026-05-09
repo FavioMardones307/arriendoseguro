@@ -23,17 +23,18 @@ async function crearPropiedad(formData: FormData) {
     depto: formData.get("depto") as string || null,
     comuna: formData.get("comuna") as string,
     region: formData.get("region") as string,
-    metros_cuadrados: formData.get("metros") ? String(formData.get("metros")) : null,
+    metros_cuadrados: formData.get("metros") ? Number(formData.get("metros")) : null,
     dormitorios: formData.get("dormitorios") ? Number(formData.get("dormitorios")) : null,
     banos: formData.get("banos") ? Number(formData.get("banos")) : null,
     amoblada: formData.get("amoblada") === "on",
-    valor_uf: String(formData.get("valor_uf")),
+    valor_uf: Number(formData.get("valor_uf")),
     rol_avaluo: formData.get("rol_avaluo") as string || null,
     descripcion: formData.get("descripcion") as string || null,
     activa: true,
   };
 
-  const { error } = await supabase.from("properties").insert(body);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).from("properties").insert(body);
   if (error) throw new Error(error.message);
 
   revalidatePath("/propietario/propiedades");

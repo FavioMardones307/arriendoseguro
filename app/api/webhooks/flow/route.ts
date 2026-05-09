@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createAdminClient();
 
     if (status === "2") {
-      // Pago exitoso
-      const { data: payment, error: paymentError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: payment, error: paymentError } = await (supabase as any)
         .from("payments")
         .update({
           estado: "pagado",
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
           dias_atraso: 0,
         })
         .eq("id", commerceOrder)
-        .select("*, contracts(arrendador_id, arrendatario_id)")
+        .select()
         .single();
 
       if (paymentError || !payment) {
@@ -78,8 +78,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Pago no encontrado" }, { status: 404 });
       }
 
-      // Registrar en audit_log
-      await supabase.from("audit_log").insert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).from("audit_log").insert({
         accion: "pago_confirmado_flow",
         entidad: "payments",
         entidad_id: commerceOrder,
@@ -92,7 +92,8 @@ export async function POST(request: NextRequest) {
 
     } else if (status === "3" || status === "4") {
       // Pago rechazado o anulado
-      await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
         .from("payments")
         .update({ flow_token: token })
         .eq("id", commerceOrder);
