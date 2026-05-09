@@ -36,7 +36,16 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/");
+    // Obtener perfil para saber el rol
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("rol")
+      .eq("id", user?.id ?? "")
+      .single();
+
+    const destino = profile?.rol === "arrendatario" ? "/arrendatario" : "/propietario";
+    router.push(destino);
     router.refresh();
   }
 

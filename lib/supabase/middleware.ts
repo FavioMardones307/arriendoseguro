@@ -61,7 +61,7 @@ export async function updateSession(request: NextRequest) {
   // Redirigir al dashboard si ya está autenticado e intenta ir a login/registro
   if (user && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/registro")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/propietario";
     return NextResponse.redirect(url);
   }
 
