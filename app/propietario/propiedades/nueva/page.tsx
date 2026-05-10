@@ -24,25 +24,37 @@ export default function NuevaPropiedadPage() {
   const valorFormateado = useMemo(() => {
     if (!valorRaw) return "";
     
-    const num = valorRaw.replace(/\D/g, "");
-    if (!num) return "";
-
+    // Separamos la parte entera de la decimal si existe
+    const [entera, decimal] = valorRaw.split(/[.,]/);
+    
+    // Formatear la parte entera con separador de miles
+    const enteraFormateada = entera ? new Intl.NumberFormat("es-CL").format(parseInt(entera)) : "";
+    
     if (moneda === "CLP") {
-      // CLP: Sin decimales, con separador de miles (.)
-      return new Intl.NumberFormat("es-CL").format(parseInt(num));
+      return enteraFormateada;
     } else {
-      // UF: Acepta decimales. El usuario escribe y los últimos 2 dígitos son decimales
-      const val = parseFloat(num) / 100;
-      return new Intl.NumberFormat("es-CL", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(val);
+      // Para UF, si hay una coma/punto, lo mostramos
+      const tieneSeparador = valorRaw.includes(".") || valorRaw.includes(",");
+      return tieneSeparador ? `${enteraFormateada},${decimal || ""}` : enteraFormateada;
     }
   }, [valorRaw, moneda]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/\D/g, "");
-    setValorRaw(val);
+    const val = e.target.value;
+    
+    if (moneda === "CLP") {
+      // CLP: Solo números
+      setValorRaw(val.replace(/\D/g, ""));
+    } else {
+      // UF: Números y un solo separador decimal
+      const sanitized = val.replace(/[^0-9.,]/g, "");
+      const parts = sanitized.split(/[.,]/);
+      if (parts.length > 2) {
+        setValorRaw(parts[0] + "," + parts[1]); // Solo permitimos un separador
+      } else {
+        setValorRaw(sanitized);
+      }
+    }
   };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -52,8 +64,12 @@ export default function NuevaPropiedadPage() {
     
     try {
       formData.append("moneda_seleccionada", moneda);
-      // Enviamos el valor numérico real al servidor
-      const numericValue = moneda === "CLP" ? parseInt(valorRaw) : parseFloat(valorRaw) / 100;
+      // Limpiamos el valor para el servidor (cambiamos coma por punto para que sea un número válido)
+      const numericString = valorRaw.replace(",", ".");
+      const numericValue = parseFloat(numericString);
+      
+      if (isNaN(numericValue)) throw new Error("Valor de arriendo no es válido");
+      
       formData.append("valor_arriendo_numeric", numericValue.toString());
       
       const result = await savePropertyAction(formData);
@@ -256,7 +272,7 @@ export default function NuevaPropiedadPage() {
                 onChange={handleInputChange}
                 className="input-base font-bold text-[#0F172A]"
                 style={{ paddingLeft: "115px" }}
-                placeholder={moneda === "UF" ? "0,00" : "0"}
+                placeholder={moneda === "UF" ? "14,20" : "650.000"}
                 required
               />
               <input type="hidden" name="valor_arriendo" value={valorRaw} />
@@ -271,7 +287,7 @@ export default function NuevaPropiedadPage() {
             </div>
           </div>
           <p className="text-[10px] text-[#64748B] italic">
-            * {moneda === "UF" ? "Ingresa el valor (ej: 1950 para 19,50). Se ajustará mensualmente según la UF." : "El valor quedará fijado en pesos chilenos sin decimales."}
+            * {moneda === "UF" ? "Ingresa el valor (ej: 14,2). Se ajustará mensualmente según el valor oficial de la UF." : "El valor quedará fijado en pesos chilenos sin decimales."}
           </p>
         </div>
 
