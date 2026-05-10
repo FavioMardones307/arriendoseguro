@@ -30,6 +30,9 @@ async function crearPropiedad(formData: FormData) {
     valor_uf: Number(formData.get("valor_uf")),
     rol_avaluo: formData.get("rol_avaluo") as string || null,
     descripcion: formData.get("descripcion") as string || null,
+    tiene_agua: formData.get("tiene_agua") === "on",
+    tiene_luz: formData.get("tiene_luz") === "on",
+    tiene_gas: formData.get("tiene_gas") === "on",
     activa: true,
   };
 
@@ -226,6 +229,49 @@ export default async function NuevaPropiedadPage() {
               placeholder="123-456"
             />
           </div>
+        </div>
+
+        {/* Servicios Básicos */}
+        <div className="space-y-3">
+          <p className="label">Servicios básicos aplicables</p>
+          <div className="flex flex-wrap gap-6 p-4 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="tiene_agua"
+                name="tiene_agua"
+                defaultChecked
+                className="w-4 h-4 accent-[#1E40AF] cursor-pointer"
+              />
+              <label htmlFor="tiene_agua" className="text-sm font-medium text-[#334155] cursor-pointer select-none">
+                Agua potable
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="tiene_luz"
+                name="tiene_luz"
+                defaultChecked
+                className="w-4 h-4 accent-[#1E40AF] cursor-pointer"
+              />
+              <label htmlFor="tiene_luz" className="text-sm font-medium text-[#334155] cursor-pointer select-none">
+                Energía eléctrica
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="tiene_gas"
+                name="tiene_gas"
+                className="w-4 h-4 accent-[#1E40AF] cursor-pointer"
+              />
+              <label htmlFor="tiene_gas" className="text-sm font-medium text-[#334155] cursor-pointer select-none">
+                Gas de red/balón
+              </label>
+            </div>
+          </div>
+          <p className="text-xs text-[#64748B]">Marca solo los servicios que el arrendatario debe pagar aparte.</p>
         </div>
 
         {/* Descripción */}

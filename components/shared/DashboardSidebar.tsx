@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Home, Building2, FileText, CreditCard, Camera,
   Users, BarChart3, Settings, X, Menu, Scale,
-  Star, ChevronRight,
+  Star, ChevronRight, Zap,
 } from "lucide-react";
 
 interface NavItem {
@@ -20,6 +20,7 @@ const navPropietario: NavItem[] = [
   { href: "/propietario/propiedades", label: "Propiedades", icon: Building2 },
   { href: "/propietario/contratos", label: "Contratos", icon: FileText },
   { href: "/propietario/pagos", label: "Pagos", icon: CreditCard },
+  { href: "/propietario/servicios", label: "Servicios Básicos", icon: Zap },
   { href: "/propietario/inventarios", label: "Inventarios", icon: Camera },
   { href: "/propietario/arrendatarios", label: "Arrendatarios", icon: Users },
   { href: "/propietario/reportes", label: "Reportes", icon: BarChart3 },

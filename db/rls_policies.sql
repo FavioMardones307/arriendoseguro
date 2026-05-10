@@ -1,4 +1,4 @@
-﻿-- ═══════════════════════════════════════════════════════════════════════════════
+-- ═══════════════════════════════════════════════════════════════════════════════
 -- ArriendoSeguro — RLS Policies + Auth Trigger
 -- Ejecutar en: Supabase SQL Editor
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -247,5 +247,22 @@ DROP POLICY IF EXISTS "consents: usuario inserta los suyos" ON public.user_conse
 CREATE POLICY "consents: usuario inserta los suyos"
   ON public.user_consents FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+
+-- ─── 18. RLS: UTILITY_ACCOUNTS ──────────────────────────────────────────────
+ALTER TABLE public.utility_accounts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "utility_accounts: propietario gestiona los suyos" ON public.utility_accounts;
+CREATE POLICY "utility_accounts: propietario gestiona los suyos"
+  ON public.utility_accounts FOR ALL
+  USING (
+    property_id IN (
+      SELECT id FROM public.properties WHERE owner_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    property_id IN (
+      SELECT id FROM public.properties WHERE owner_id = auth.uid()
+    )
+  );
 
 SELECT 'RLS + Trigger configurados correctamente' AS resultado;

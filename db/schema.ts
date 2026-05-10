@@ -212,6 +212,10 @@ export const properties = pgTable(
     rol_avaluo: text("rol_avaluo"),
     descripcion: text("descripcion"),
     activa: boolean("activa").notNull().default(true),
+    // Flags para servicios básicos aplicables
+    tiene_agua: boolean("tiene_agua").notNull().default(true),
+    tiene_luz: boolean("tiene_luz").notNull().default(true),
+    tiene_gas: boolean("tiene_gas").notNull().default(false),
     ...timestamps,
   },
   (table) => [
@@ -537,6 +541,30 @@ export const auditLog = pgTable(
     index("audit_log_user_idx").on(table.user_id),
     index("audit_log_entidad_idx").on(table.entidad, table.entidad_id),
     index("audit_log_created_idx").on(table.created_at),
+  ]
+);
+
+/**
+ * Cuentas de servicios básicos asociadas a una propiedad para tracking automático (Unired, etc.)
+ */
+export const utilityAccounts = pgTable(
+  "utility_accounts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    property_id: uuid("property_id")
+      .notNull()
+      .references(() => properties.id, { onDelete: "cascade" }),
+    tipo: tipoServicioEnum("tipo").notNull(),
+    proveedor: text("proveedor").notNull(),
+    numero_cliente: text("numero_cliente").notNull(),
+    monto_deuda: decimal("monto_deuda", { precision: 12, scale: 2 }).notNull().default("0"),
+    fecha_vencimiento: date("fecha_vencimiento"),
+    ultima_consulta: timestamp("ultima_consulta", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    index("utility_accounts_property_idx").on(table.property_id),
+    uniqueIndex("utility_accounts_unique_idx").on(table.property_id, table.tipo, table.numero_cliente),
   ]
 );
 

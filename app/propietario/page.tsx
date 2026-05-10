@@ -3,7 +3,7 @@ import Link from "next/link";
 import {
   Building2, TrendingUp, AlertCircle, CheckCircle2,
   Clock, Plus, ArrowRight, CreditCard, FileText,
-  ChevronUp, ChevronDown, Minus
+  ChevronUp, ChevronDown, Minus, Droplet, Zap, Flame
 } from "lucide-react";
 import { formatearCLP, formatearUF } from "@/lib/chile/format";
 import { formatearFechaChile } from "@/lib/chile/format";
@@ -33,6 +33,11 @@ const mockData = {
       estado_pago: "pagado" as const,
       proximo_pago: "2026-06-05",
       dias_al_pago: 30,
+      servicios: {
+        agua: { aplica: true, deuda: 0 },
+        luz: { aplica: true, deuda: 12450 },
+        gas: { aplica: false, deuda: 0 }
+      }
     },
     {
       id: "2",
@@ -44,6 +49,11 @@ const mockData = {
       estado_pago: "pendiente" as const,
       proximo_pago: "2026-05-08",
       dias_al_pago: 2,
+      servicios: {
+        agua: { aplica: true, deuda: 0 },
+        luz: { aplica: true, deuda: 0 },
+        gas: { aplica: true, deuda: 0 }
+      }
     },
     {
       id: "3",
@@ -55,34 +65,55 @@ const mockData = {
       estado_pago: "pagado" as const,
       proximo_pago: "2026-06-10",
       dias_al_pago: 35,
+      servicios: {
+        agua: { aplica: true, deuda: 0 },
+        luz: { aplica: true, deuda: 0 },
+        gas: { aplica: false, deuda: 0 }
+      }
     },
   ],
   alertas: [
     { id: "1", tipo: "vencimiento_pago", mensaje: "Pago pendiente: Carlos Muñoz — vence en 2 días", urgente: true },
     { id: "2", tipo: "reajuste", mensaje: "Reajuste IPC pendiente para contrato Los Leones — junio 2026", urgente: false },
+    { id: "3", tipo: "deuda_servicio", mensaje: "Deuda detectada: Enel (Luz) — Av. Providencia 1234 ($12.450)", urgente: true },
   ],
 };
 
 function SemaforoPago({ estado, diasAlPago }: { estado: "pagado" | "pendiente" | "atrasado"; diasAlPago: number }) {
   if (estado === "pagado") return (
     <span className="badge badge-success flex items-center gap-1">
-      <CheckCircle2 size={12} /> Al día
+      <CheckCircle2 size={12} /> Arriendo al día
     </span>
   );
   if (estado === "atrasado") return (
     <span className="badge badge-error flex items-center gap-1">
-      <AlertCircle size={12} /> Atrasado
+      <AlertCircle size={12} /> Pago atrasado
     </span>
   );
   if (diasAlPago <= 3) return (
     <span className="badge badge-warning flex items-center gap-1">
-      <Clock size={12} /> Vence pronto
+      <Clock size={12} /> Vence en {diasAlPago}d
     </span>
   );
   return (
     <span className="badge badge-neutral flex items-center gap-1">
       <Clock size={12} /> Pendiente
     </span>
+  );
+}
+
+function MiniSemaforoServicio({ tipo, deuda, aplica }: { tipo: 'agua' | 'luz' | 'gas', deuda: number, aplica: boolean }) {
+  if (!aplica) return null;
+  const Icon = tipo === 'agua' ? Droplet : tipo === 'luz' ? Zap : Flame;
+  const colorClass = deuda > 0 ? "text-red-500 bg-red-50 border-red-200" : "text-green-500 bg-green-50 border-green-200";
+  
+  return (
+    <div 
+      className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all hover:scale-110 cursor-help`}
+      title={`${tipo.charAt(0).toUpperCase() + tipo.slice(1)}: ${deuda > 0 ? `Deuda ${formatearCLP(deuda)}` : 'Al día'}`}
+    >
+      <Icon size={14} className={deuda > 0 ? "fill-red-500" : "fill-green-500"} />
+    </div>
   );
 }
 
@@ -94,7 +125,7 @@ export default function PropietarioDashboard() {
       {/* Encabezado */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#0F172A]">Bienvenido, Propietario</h1>
+          <h1 className="text-2xl font-bold text-[#0F172A]">Panel de Control</h1>
           <p className="text-[#64748B] text-sm mt-0.5">
             {formatearFechaChile(new Date())} · {resumen.contratos_vigentes} contratos vigentes
           </p>
@@ -185,9 +216,9 @@ export default function PropietarioDashboard() {
               <tr className="bg-[#F8FAFC] text-[#64748B] text-xs font-semibold uppercase tracking-wide">
                 <th className="text-left px-5 py-3">Propiedad</th>
                 <th className="text-left px-5 py-3">Arrendatario</th>
-                <th className="text-right px-5 py-3">Monto</th>
-                <th className="text-center px-5 py-3">Estado</th>
-                <th className="text-left px-5 py-3">Próximo pago</th>
+                <th className="text-right px-5 py-3">Arriendo</th>
+                <th className="text-center px-5 py-3">Estado Arriendo</th>
+                <th className="text-center px-5 py-3">Servicios Básicos</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
@@ -206,12 +237,12 @@ export default function PropietarioDashboard() {
                   <td className="px-5 py-4 text-center">
                     <SemaforoPago estado={p.estado_pago} diasAlPago={p.dias_al_pago} />
                   </td>
-                  <td className="px-5 py-4 text-[#64748B] text-xs">
-                    {formatearFechaChile(p.proximo_pago)}
-                    <br />
-                    <span className={p.dias_al_pago <= 3 ? "text-[#F59E0B] font-medium" : "text-[#94A3B8]"}>
-                      {p.dias_al_pago <= 0 ? "¡Hoy!" : `en ${p.dias_al_pago} días`}
-                    </span>
+                  <td className="px-5 py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      <MiniSemaforoServicio tipo="agua" deuda={p.servicios.agua.deuda} aplica={p.servicios.agua.aplica} />
+                      <MiniSemaforoServicio tipo="luz" deuda={p.servicios.luz.deuda} aplica={p.servicios.luz.aplica} />
+                      <MiniSemaforoServicio tipo="gas" deuda={p.servicios.gas.deuda} aplica={p.servicios.gas.aplica} />
+                    </div>
                   </td>
                   <td className="px-5 py-4">
                     <Link href={`/propietario/propiedades/${p.id}`} className="text-[#1E40AF] hover:underline text-xs font-medium">
