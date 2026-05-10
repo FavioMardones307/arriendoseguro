@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { utilityAccounts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { createAdminClient } from "@/lib/supabase/server";
 import { consultarDeudaUnired } from "@/lib/servicios/unired";
 
 /**
  * Sincroniza las deudas de servicios básicos de todas las propiedades.
  * Se espera que este endpoint sea llamado por un Cron Job (Vercel Cron).
- * 
- * Seguridad: Verificar CRON_SECRET en producción.
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -18,16 +14,20 @@ export async function GET(request: Request) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
+  const supabase = await createAdminClient();
+
   try {
     console.log("[Cron] Iniciando sincronización de servicios...");
     
     // 1. Obtener todas las cuentas de servicios
-    const cuentas = await db.select().from(utilityAccounts);
+    const { data: cuentas } = await supabase.from("utility_accounts").select("*");
     
+    if (!cuentas) return NextResponse.json({ success: true, procesados: 0 });
+
     const resultados = [];
 
-    // 2. Procesar cada cuenta (podría hacerse en paralelo con límites)
-    for (const cuenta of cuentas) {
+    // 2. Procesar cada cuenta
+    for (const cuenta of (cuentas as any[])) {
       try {
         const data = await consultarDeudaUnired(
           cuenta.tipo,
@@ -36,14 +36,15 @@ export async function GET(request: Request) {
         );
 
         // 3. Actualizar la base de datos
-        await db.update(utilityAccounts)
-          .set({
+        await supabase
+          .from("utility_accounts")
+          .update({
             monto_deuda: data.monto.toString(),
             fecha_vencimiento: data.vencimiento,
-            ultima_consulta: new Date(),
-            updated_at: new Date(),
+            ultima_consulta: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           })
-          .where(eq(utilityAccounts.id, cuenta.id));
+          .eq("id", cuenta.id);
 
         resultados.push({
           id: cuenta.id,

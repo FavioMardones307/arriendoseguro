@@ -6,9 +6,7 @@ import {
   Maximize2, User, FileText, Calendar, 
   AlertTriangle, CheckCircle2, MoreVertical
 } from "lucide-react";
-import { db } from "@/db";
-import { properties, profiles, utilityAccounts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { createAdminClient } from "@/lib/supabase/server";
 import { UtilityAccountManager } from "@/components/properties/UtilityAccountManager";
 import { formatearUF, formatearFechaChile } from "@/lib/chile/format";
 
@@ -18,29 +16,17 @@ export const metadata: Metadata = {
 
 export default async function PropiedadDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
+  const supabase = await createAdminClient();
 
-  // En una app real, esto sería una consulta a Supabase
-  // Por ahora, intentamos obtener de la DB si existe, o usamos mock si falla (para demo)
-  let propiedad;
-  let cuentasServicios = [];
+  // Obtener propiedad y sus cuentas de servicios
+  const { data: propResult } = await supabase
+    .from("properties")
+    .select("*, utility_accounts(*)")
+    .eq("id", id)
+    .single();
 
-  try {
-    const result = await db.select()
-      .from(properties)
-      .where(eq(properties.id, id))
-      .limit(1);
-    
-    if (result.length > 0) {
-      propiedad = result[0];
-      
-      // Obtener cuentas de servicios
-      cuentasServicios = await db.select()
-        .from(utilityAccounts)
-        .where(eq(utilityAccounts.property_id, id));
-    }
-  } catch (error) {
-    console.error("Error fetching property:", error);
-  }
+  let propiedad = propResult;
+  const cuentasServicios = propResult?.utility_accounts || [];
 
   // Fallback a mock data si no se encuentra en DB (para desarrollo/continuidad)
   if (!propiedad) {
