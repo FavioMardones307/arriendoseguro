@@ -226,7 +226,8 @@ export default function NuevaPropiedadPage() {
                 type="number"
                 step={moneda === "UF" ? "0.01" : "1"}
                 min="0.01"
-                className="input-base pl-[95px] font-bold text-[#0F172A]"
+                className="input-base font-bold text-[#0F172A]"
+                style={{ paddingLeft: "115px" }}
                 placeholder={moneda === "UF" ? "19.50" : "650.000"}
                 required
               />
