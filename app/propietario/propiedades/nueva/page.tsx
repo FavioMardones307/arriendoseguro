@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, Building2, Check, Landmark } from "lucide-react";
+import { ArrowLeft, Building2, Landmark } from "lucide-react";
 import { savePropertyAction } from "@/lib/actions/properties";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,32 @@ export default function NuevaPropiedadPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [moneda, setMoneda] = useState<"UF" | "CLP">("UF");
+  const [valorRaw, setValorRaw] = useState("");
+
+  // Formatear el valor mientras el usuario escribe
+  const valorFormateado = useMemo(() => {
+    if (!valorRaw) return "";
+    
+    const num = valorRaw.replace(/\D/g, "");
+    if (!num) return "";
+
+    if (moneda === "CLP") {
+      // CLP: Sin decimales, con separador de miles (.)
+      return new Intl.NumberFormat("es-CL").format(parseInt(num));
+    } else {
+      // UF: Acepta decimales. El usuario escribe y los últimos 2 dígitos son decimales
+      const val = parseFloat(num) / 100;
+      return new Intl.NumberFormat("es-CL", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(val);
+    }
+  }, [valorRaw, moneda]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, "");
+    setValorRaw(val);
+  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,8 +51,11 @@ export default function NuevaPropiedadPage() {
     const formData = new FormData(e.currentTarget);
     
     try {
-      // Pasamos la moneda seleccionada para que la acción sepa cómo procesar el valor
       formData.append("moneda_seleccionada", moneda);
+      // Enviamos el valor numérico real al servidor
+      const numericValue = moneda === "CLP" ? parseInt(valorRaw) : parseFloat(valorRaw) / 100;
+      formData.append("valor_arriendo_numeric", numericValue.toString());
+      
       const result = await savePropertyAction(formData);
       
       if (result.success) {
@@ -195,14 +224,14 @@ export default function NuevaPropiedadPage() {
             <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
               <button 
                 type="button"
-                onClick={() => setMoneda("UF")}
+                onClick={() => { setMoneda("UF"); setValorRaw(""); }}
                 className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${moneda === "UF" ? "bg-white text-[#1E40AF] shadow-sm" : "text-[#64748B] hover:text-[#1E40AF]"}`}
               >
                 UF
               </button>
               <button 
                 type="button"
-                onClick={() => setMoneda("CLP")}
+                onClick={() => { setMoneda("CLP"); setValorRaw(""); }}
                 className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${moneda === "CLP" ? "bg-white text-[#1E40AF] shadow-sm" : "text-[#64748B] hover:text-[#1E40AF]"}`}
               >
                 PESOS ($)
@@ -221,16 +250,16 @@ export default function NuevaPropiedadPage() {
                 <span className="text-[10px] font-bold text-[#64748B]">{moneda}</span>
               </div>
               <input
-                id="prop-valor"
-                name="valor_arriendo"
-                type="number"
-                step={moneda === "UF" ? "0.01" : "1"}
-                min="0.01"
+                id="prop-valor-visual"
+                type="text"
+                value={valorFormateado}
+                onChange={handleInputChange}
                 className="input-base font-bold text-[#0F172A]"
                 style={{ paddingLeft: "115px" }}
-                placeholder={moneda === "UF" ? "19.50" : "650.000"}
+                placeholder={moneda === "UF" ? "0,00" : "0"}
                 required
               />
+              <input type="hidden" name="valor_arriendo" value={valorRaw} />
             </div>
             <div>
               <input
@@ -242,7 +271,7 @@ export default function NuevaPropiedadPage() {
             </div>
           </div>
           <p className="text-[10px] text-[#64748B] italic">
-            * {moneda === "UF" ? "El valor se ajustará mensualmente según el valor oficial de la UF." : "El valor quedará fijado en pesos chilenos."}
+            * {moneda === "UF" ? "Ingresa el valor (ej: 1950 para 19,50). Se ajustará mensualmente según la UF." : "El valor quedará fijado en pesos chilenos sin decimales."}
           </p>
         </div>
 
@@ -260,7 +289,7 @@ export default function NuevaPropiedadPage() {
             </label>
             <label className="flex items-center gap-2 cursor-pointer group">
               <input type="checkbox" name="tiene_gas" className="w-4 h-4 accent-[#1E40AF]" />
-              <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Gas de red/balón</span>
+              <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Gas (por cañería o Red)</span>
             </label>
           </div>
           <p className="text-[10px] text-[#64748B]">Marca solo los servicios que el arrendatario debe pagar aparte.</p>

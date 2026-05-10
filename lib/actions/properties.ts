@@ -12,7 +12,7 @@ export async function savePropertyAction(formData: FormData) {
   if (!user) return { success: false, error: "No autenticado" };
 
   const moneda = formData.get("moneda_seleccionada") as string;
-  const valorRaw = Number(formData.get("valor_arriendo"));
+  const valorRaw = Number(formData.get("valor_arriendo_numeric"));
   
   // Si es CLP, convertimos a UF (valor aproximado para demo/consistencia)
   // En producción esto debería consultar una API de indicadores diarios
