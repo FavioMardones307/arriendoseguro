@@ -144,10 +144,9 @@ export default function NuevaPropiedadPage() {
 
         {/* Características */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <p className="label mb-0">Características</p>
-            <span className="text-[10px] font-bold text-[#94A3B8] bg-slate-100 px-2 py-0.5 rounded uppercase">Opcional</span>
-          </div>
+          <p className="label mb-3">
+            Características <span className="text-xs font-normal text-[#94A3B8] ml-1">(opcional)</span>
+          </p>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label htmlFor="prop-metros" className="text-[10px] font-bold text-[#64748B] uppercase mb-1 block">m² útiles</label>
@@ -213,7 +212,7 @@ export default function NuevaPropiedadPage() {
           
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="relative group">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none border-r pr-2 border-slate-200">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none border-r pr-2 border-slate-200 w-[75px]">
                 {moneda === "UF" ? (
                   <Landmark size={14} className="text-[#1E40AF]" />
                 ) : (
@@ -227,7 +226,7 @@ export default function NuevaPropiedadPage() {
                 type="number"
                 step={moneda === "UF" ? "0.01" : "1"}
                 min="0.01"
-                className="input-base pl-20 font-bold text-[#0F172A]"
+                className="input-base pl-[95px] font-bold text-[#0F172A]"
                 placeholder={moneda === "UF" ? "19.50" : "650.000"}
                 required
               />
