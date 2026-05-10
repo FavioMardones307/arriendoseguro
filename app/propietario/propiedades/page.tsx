@@ -52,6 +52,8 @@ export default async function PropiedadesPage() {
         banos: p.banos || 0,
         metros: p.metros_cuadrados || 0,
         valor_uf: p.valor_uf,
+        valor_arriendo: p.valor_arriendo,
+        moneda: p.moneda || "UF",
         activa: p.activa,
         tiene_contrato: false,
         arrendatario: null,
@@ -87,8 +89,8 @@ export default async function PropiedadesPage() {
                   <CheckCircle2 size={11} /> Arrendada
                 </span>
               ) : (
-                <span className="badge badge-neutral flex items-center gap-1">
-                  <XCircle size={11} /> Disponible
+                <span className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 border border-blue-100">
+                  <CheckCircle2 size={11} /> Disponible para arrendar
                 </span>
               )}
             </div>
@@ -106,7 +108,11 @@ export default async function PropiedadesPage() {
 
             <div className="flex items-center justify-between pt-3 border-t border-[#F1F5F9]">
               <div>
-                <p className="text-lg font-bold text-[#1E40AF]">{formatearUF(p.valor_uf)}</p>
+                <p className="text-lg font-bold text-[#1E40AF]">
+                  {p.moneda === "CLP" 
+                    ? `$${new Intl.NumberFormat("es-CL").format(p.valor_arriendo || 0)}`
+                    : formatearUF(p.valor_uf)}
+                </p>
                 {p.arrendatario && <p className="text-xs text-[#64748B]">{p.arrendatario}</p>}
               </div>
               <Link href={`/propietario/propiedades/${p.id}`}

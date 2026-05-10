@@ -35,6 +35,8 @@ export async function savePropertyAction(formData: FormData) {
     banos: formData.get("banos") ? Number(formData.get("banos")) : null,
     amoblada: formData.get("amoblada") === "on",
     valor_uf: valorUF,
+    valor_arriendo: valorRaw, // Valor original ingresado
+    moneda: moneda,           // UF o CLP
     rol_avaluo: formData.get("rol_avaluo") as string || null,
     descripcion: formData.get("descripcion") as string || null,
     tiene_agua: formData.get("tiene_agua") === "on",
