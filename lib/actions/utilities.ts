@@ -21,23 +21,35 @@ export async function saveUtilityAccount(formData: {
     updated_at: new Date().toISOString(),
   };
 
-  let error;
-  if (formData.id) {
-    // Update
-    const { error: err } = await supabase
-      .from("utility_accounts")
-      .update(data)
-      .eq("id", formData.id);
-    error = err;
-  } else {
-    // Insert
-    const { error: err } = await supabase
-      .from("utility_accounts")
-      .insert([data]);
-    error = err;
+  // Validación para IDs de prueba (Mocks)
+  if (["1", "2", "3"].includes(formData.property_id)) {
+    throw new Error("Esta es una propiedad de demostración. Por favor, registra una propiedad real en la sección 'Propiedades' para activar el monitoreo de servicios.");
   }
 
-  if (error) throw new Error(error.message);
+  let error;
+  try {
+    if (formData.id) {
+      // Update
+      const { error: err } = await supabase
+        .from("utility_accounts")
+        .update(data)
+        .eq("id", formData.id);
+      error = err;
+    } else {
+      // Insert
+      const { error: err } = await supabase
+        .from("utility_accounts")
+        .insert([data]);
+      error = err;
+    }
+  } catch (e: any) {
+    throw new Error("Error de conexión con la base de datos: " + e.message);
+  }
+
+  if (error) {
+    console.error("Supabase Error:", error);
+    throw new Error(error.message || "Error al guardar en la base de datos");
+  }
 
   revalidatePath("/propietario/servicios");
   revalidatePath("/propietario");
