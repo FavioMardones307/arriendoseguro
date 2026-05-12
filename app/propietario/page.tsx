@@ -7,76 +7,10 @@ import {
 } from "lucide-react";
 import { formatearCLP, formatearUF } from "@/lib/chile/format";
 import { formatearFechaChile } from "@/lib/chile/format";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Panel Propietario",
-};
-
-// Mock data — en producción vendrá de Supabase con Server Components
-const mockData = {
-  resumen: {
-    propiedades_activas: 3,
-    contratos_vigentes: 3,
-    ingresos_mes_clp: 1850000,
-    ingresos_mes_uf: 55.2,
-    pagos_pendientes: 1,
-    pagos_atrasados: 0,
-  },
-  propiedades: [
-    {
-      id: "1",
-      direccion: "Av. Providencia 1234, Dpto 501",
-      comuna: "Providencia",
-      arrendatario: "María González",
-      monto_clp: 650000,
-      monto_uf: 19.4,
-      estado_pago: "pagado" as const,
-      proximo_pago: "2026-06-05",
-      dias_al_pago: 30,
-      servicios: {
-        agua: { aplica: true, deuda: 0 },
-        luz: { aplica: true, deuda: 12450 },
-        gas: { aplica: false, deuda: 0 }
-      }
-    },
-    {
-      id: "2",
-      direccion: "Los Leones 456, Casa 3",
-      comuna: "Las Condes",
-      arrendatario: "Carlos Muñoz",
-      monto_clp: 750000,
-      monto_uf: 22.4,
-      estado_pago: "pendiente" as const,
-      proximo_pago: "2026-05-08",
-      dias_al_pago: 2,
-      servicios: {
-        agua: { aplica: true, deuda: 0 },
-        luz: { aplica: true, deuda: 0 },
-        gas: { aplica: true, deuda: 0 }
-      }
-    },
-    {
-      id: "3",
-      direccion: "Ñuñoa 789, Dpto 302",
-      comuna: "Ñuñoa",
-      arrendatario: "Ana Fernández",
-      monto_clp: 450000,
-      monto_uf: 13.4,
-      estado_pago: "pagado" as const,
-      proximo_pago: "2026-06-10",
-      dias_al_pago: 35,
-      servicios: {
-        agua: { aplica: true, deuda: 0 },
-        luz: { aplica: true, deuda: 0 },
-        gas: { aplica: false, deuda: 0 }
-      }
-    },
-  ],
-  alertas: [
-    { id: "1", tipo: "vencimiento_pago", mensaje: "Pago pendiente: Carlos Muñoz — vence en 2 días", urgente: true },
-    { id: "2", tipo: "reajuste", mensaje: "Reajuste IPC pendiente para contrato Los Leones — junio 2026", urgente: false },
-    { id: "3", tipo: "deuda_servicio", mensaje: "Deuda detectada: Enel (Luz) — Av. Providencia 1234 ($12.450)", urgente: true },
-  ],
+  title: "Panel Propietario | ArriendoSeguro",
 };
 
 function SemaforoPago({ estado, diasAlPago }: { estado: "pagado" | "pendiente" | "atrasado"; diasAlPago: number }) {
@@ -102,23 +36,70 @@ function SemaforoPago({ estado, diasAlPago }: { estado: "pagado" | "pendiente" |
   );
 }
 
-function MiniSemaforoServicio({ tipo, deuda, aplica }: { tipo: 'agua' | 'luz' | 'gas', deuda: number, aplica: boolean }) {
-  if (!aplica) return null;
+function MiniSemaforoServicio({ tipo, account }: { tipo: 'agua' | 'luz' | 'gas', account?: any }) {
   const Icon = tipo === 'agua' ? Droplet : tipo === 'luz' ? Zap : Flame;
-  const colorClass = deuda > 0 ? "text-red-500 bg-red-50 border-red-200" : "text-green-500 bg-green-50 border-green-200";
+  
+  if (!account) {
+    return (
+      <div className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center opacity-20 grayscale" title="No configurado">
+        <Icon size={14} />
+      </div>
+    );
+  }
+
+  const deuda = Number(account.monto_deuda || 0);
+  const colorClass = deuda > 0 
+    ? "text-red-500 bg-red-50 border-red-200" 
+    : "text-emerald-500 bg-emerald-50 border-emerald-200";
   
   return (
     <div 
-      className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all hover:scale-110 cursor-help`}
-      title={`${tipo.charAt(0).toUpperCase() + tipo.slice(1)}: ${deuda > 0 ? `Deuda ${formatearCLP(deuda)}` : 'Al día'}`}
+      className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all hover:scale-110 cursor-help ${colorClass}`}
+      title={`${tipo.toUpperCase()}: ${deuda > 0 ? `Deuda ${formatearCLP(deuda)}` : 'Al día'}`}
     >
-      <Icon size={14} className={deuda > 0 ? "fill-red-500" : "fill-green-500"} />
+      <Icon size={14} className={deuda > 0 ? "fill-red-500" : "fill-emerald-500"} />
     </div>
   );
 }
 
-export default function PropietarioDashboard() {
-  const { resumen, propiedades, alertas } = mockData;
+export default async function PropietarioDashboard() {
+  const supabase = await createAdminClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  // Consultar datos reales de Supabase
+  const { data: realPropiedades } = await (supabase as any)
+    .from("properties")
+    .select("*, utility_accounts(*)")
+    .eq("owner_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const props = realPropiedades || [];
+  
+  // Resumen calculado de datos reales
+  const resumen = {
+    propiedades_activas: props.length,
+    contratos_vigentes: 0, // Implementar cuando haya contratos reales
+    ingresos_mes_clp: props.reduce((acc: number, p: any) => acc + (p.moneda === 'CLP' ? Number(p.valor_arriendo) : 0), 0),
+    ingresos_mes_uf: props.reduce((acc: number, p: any) => acc + (p.moneda === 'UF' ? Number(p.valor_uf) : 0), 0),
+    pagos_pendientes: 0,
+    pagos_atrasados: 0,
+  };
+
+  const alertas = [];
+  // Generar alertas automáticas de servicios
+  props.forEach((p: any) => {
+    p.utility_accounts?.forEach((acc: any) => {
+      if (Number(acc.monto_deuda) > 0) {
+        alertas.push({
+          id: acc.id,
+          mensaje: `Deuda detectada: ${acc.proveedor} (${acc.tipo}) — ${p.direccion} (${formatearCLP(acc.monto_deuda)})`,
+          urgente: true
+        });
+      }
+    });
+  });
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -127,7 +108,7 @@ export default function PropietarioDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-[#0F172A]">Panel de Control</h1>
           <p className="text-[#64748B] text-sm mt-0.5">
-            {formatearFechaChile(new Date())} · {resumen.contratos_vigentes} contratos vigentes
+            {formatearFechaChile(new Date())} · {resumen.propiedades_activas} propiedades registradas
           </p>
         </div>
         <Link href="/propietario/propiedades/nueva" className="btn-primary text-sm">
@@ -141,11 +122,7 @@ export default function PropietarioDashboard() {
           {alertas.map((alerta) => (
             <div
               key={alerta.id}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm ${
-                alerta.urgente
-                  ? "bg-red-50 border-red-200 text-red-800"
-                  : "bg-amber-50 border-amber-200 text-amber-800"
-              }`}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl border text-sm bg-red-50 border-red-200 text-red-800 animate-pulse-subtle"
               role="alert"
             >
               <AlertCircle size={16} className="shrink-0" />
@@ -170,21 +147,21 @@ export default function PropietarioDashboard() {
 
         <div className="card">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-[#64748B] uppercase tracking-wide">Ingresos mayo</span>
+            <span className="text-xs font-medium text-[#64748B] uppercase tracking-wide">Ingresos Estimados</span>
             <TrendingUp size={16} className="text-[#10B981]" />
           </div>
-          <p className="text-3xl font-bold text-[#0F172A]">{formatearCLP(resumen.ingresos_mes_clp)}</p>
+          <p className="text-xl font-bold text-[#0F172A]">{formatearCLP(resumen.ingresos_mes_clp)}</p>
           <p className="text-xs text-[#64748B] mt-1">{formatearUF(resumen.ingresos_mes_uf)}</p>
         </div>
 
         <div className="card">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-[#64748B] uppercase tracking-wide">Pagos pendientes</span>
+            <span className="text-xs font-medium text-[#64748B] uppercase tracking-wide">Pagos Pendientes</span>
             <Clock size={16} className="text-[#F59E0B]" />
           </div>
           <p className="text-3xl font-bold text-[#0F172A]">{resumen.pagos_pendientes}</p>
-          <p className="text-xs text-[#F59E0B] flex items-center gap-1 mt-1">
-            <Minus size={12} /> Requiere atención
+          <p className="text-xs text-[#64748B] flex items-center gap-1 mt-1">
+            <Minus size={12} /> Sin contratos aún
           </p>
         </div>
 
@@ -194,8 +171,8 @@ export default function PropietarioDashboard() {
             <AlertCircle size={16} className="text-[#EF4444]" />
           </div>
           <p className="text-3xl font-bold text-[#0F172A]">{resumen.pagos_atrasados}</p>
-          <p className={`text-xs flex items-center gap-1 mt-1 ${resumen.pagos_atrasados === 0 ? "text-[#10B981]" : "text-[#EF4444]"}`}>
-            {resumen.pagos_atrasados === 0 ? <><ChevronDown size={12} /> Sin atrasos</> : <><AlertCircle size={12} /> Gestionar</>}
+          <p className="text-xs text-[#10B981] flex items-center gap-1 mt-1">
+             <ChevronDown size={12} /> Sin atrasos
           </p>
         </div>
       </div>
@@ -203,7 +180,7 @@ export default function PropietarioDashboard() {
       {/* Propiedades y semáforo */}
       <div className="card p-0 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0]">
-          <h2 className="font-semibold text-[#0F172A]">Semáforo de pagos — Mayo 2026</h2>
+          <h2 className="font-semibold text-[#0F172A]">Semáforo de pagos — {new Intl.DateTimeFormat('es-CL', { month: 'long', year: 'numeric' }).format(new Date())}</h2>
           <Link href="/propietario/pagos" className="text-sm text-[#1E40AF] font-medium hover:underline flex items-center gap-1">
             Ver todos <ArrowRight size={14} />
           </Link>
@@ -215,33 +192,32 @@ export default function PropietarioDashboard() {
             <thead>
               <tr className="bg-[#F8FAFC] text-[#64748B] text-xs font-semibold uppercase tracking-wide">
                 <th className="text-left px-5 py-3">Propiedad</th>
-                <th className="text-left px-5 py-3">Arrendatario</th>
                 <th className="text-right px-5 py-3">Arriendo</th>
-                <th className="text-center px-5 py-3">Estado Arriendo</th>
+                <th className="text-center px-5 py-3">Estado</th>
                 <th className="text-center px-5 py-3">Servicios Básicos</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F1F5F9]">
-              {propiedades.map((p) => (
+              {props.map((p: any) => (
                 <tr key={p.id} className="hover:bg-[#F8FAFC] transition-colors">
                   <td className="px-5 py-4">
                     <p className="font-medium text-[#0F172A] leading-tight">{p.direccion}</p>
                     <p className="text-xs text-[#94A3B8] mt-0.5">{p.comuna}</p>
                   </td>
-                  <td className="px-5 py-4 text-[#374151]">{p.arrendatario}</td>
                   <td className="px-5 py-4 text-right">
-                    <p className="font-semibold text-[#0F172A]">{formatearCLP(p.monto_clp)}</p>
-                    <p className="text-xs text-[#94A3B8]">{formatearUF(p.monto_uf)}</p>
+                    <p className="font-semibold text-[#0F172A]">
+                      {p.moneda === 'CLP' ? formatearCLP(p.valor_arriendo) : formatearUF(p.valor_uf)}
+                    </p>
                   </td>
                   <td className="px-5 py-4 text-center">
-                    <SemaforoPago estado={p.estado_pago} diasAlPago={p.dias_al_pago} />
+                    <span className="badge badge-neutral">Sin contrato</span>
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <MiniSemaforoServicio tipo="agua" deuda={p.servicios.agua.deuda} aplica={p.servicios.agua.aplica} />
-                      <MiniSemaforoServicio tipo="luz" deuda={p.servicios.luz.deuda} aplica={p.servicios.luz.aplica} />
-                      <MiniSemaforoServicio tipo="gas" deuda={p.servicios.gas.deuda} aplica={p.servicios.gas.aplica} />
+                      <MiniSemaforoServicio tipo="agua" account={p.utility_accounts?.find((a: any) => a.tipo === 'agua')} />
+                      <MiniSemaforoServicio tipo="luz" account={p.utility_accounts?.find((a: any) => a.tipo === 'luz')} />
+                      <MiniSemaforoServicio tipo="gas" account={p.utility_accounts?.find((a: any) => a.tipo === 'gas')} />
                     </div>
                   </td>
                   <td className="px-5 py-4">
@@ -253,27 +229,6 @@ export default function PropietarioDashboard() {
               ))}
             </tbody>
           </table>
-        </div>
-
-        {/* Mobile cards */}
-        <div className="sm:hidden divide-y divide-[#F1F5F9]">
-          {propiedades.map((p) => (
-            <div key={p.id} className="px-4 py-4">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="min-w-0">
-                  <p className="font-medium text-[#0F172A] text-sm leading-tight truncate">{p.direccion}</p>
-                  <p className="text-xs text-[#94A3B8]">{p.arrendatario} · {p.comuna}</p>
-                </div>
-                <SemaforoPago estado={p.estado_pago} diasAlPago={p.dias_al_pago} />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-[#0F172A]">{formatearCLP(p.monto_clp)}</span>
-                <Link href={`/propietario/propiedades/${p.id}`} className="text-xs text-[#1E40AF] font-medium">
-                  Ver detalle →
-                </Link>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 

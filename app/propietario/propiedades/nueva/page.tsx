@@ -292,23 +292,80 @@ export default function NuevaPropiedadPage() {
         </div>
 
         {/* Servicios Básicos */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <p className="label">Servicios básicos aplicables</p>
-          <div className="flex flex-wrap gap-4 p-4 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0]">
-            <label className="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" name="tiene_agua" defaultChecked className="w-4 h-4 accent-[#1E40AF]" />
-              <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Agua potable</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" name="tiene_luz" defaultChecked className="w-4 h-4 accent-[#1E40AF]" />
-              <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Energía eléctrica</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox" name="tiene_gas" className="w-4 h-4 accent-[#1E40AF]" />
-              <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Gas (por cañería o Red)</span>
-            </label>
+          <div className="space-y-3 p-4 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0]">
+            {/* Agua Potable */}
+            <div className="space-y-3 pb-3 border-b border-slate-100">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" name="tiene_agua" defaultChecked className="w-4 h-4 accent-[#1E40AF]" />
+                <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Agua potable</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3 pl-6">
+                <input 
+                  name="n_cliente_agua" 
+                  className="input-base text-xs py-1.5" 
+                  placeholder="Nº Cliente (opcional)" 
+                />
+                <select name="proveedor_agua" className="input-base text-xs py-1.5">
+                  <option value="">Proveedor...</option>
+                  <option value="Aguas Andinas">Aguas Andinas</option>
+                  <option value="Essbio">Essbio</option>
+                  <option value="Esval">Esval</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Luz */}
+            <div className="space-y-3 pb-3 border-b border-slate-100">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" name="tiene_luz" defaultChecked className="w-4 h-4 accent-[#1E40AF]" />
+                <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Energía eléctrica</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3 pl-6">
+                <input 
+                  name="n_cliente_luz" 
+                  className="input-base text-xs py-1.5" 
+                  placeholder="Nº Cliente (opcional)" 
+                />
+                <select name="proveedor_luz" className="input-base text-xs py-1.5">
+                  <option value="">Proveedor...</option>
+                  <option value="Enel">Enel</option>
+                  <option value="CGE">CGE</option>
+                  <option value="Chilquinta">Chilquinta</option>
+                  <option value="Saesa">Saesa</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Gas */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" name="tiene_gas" className="w-4 h-4 accent-[#1E40AF]" />
+                <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Gas (por cañería o Red)</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3 pl-6">
+                <input 
+                  name="n_cliente_gas" 
+                  className="input-base text-xs py-1.5" 
+                  placeholder="Nº Cliente (opcional)" 
+                />
+                <select name="proveedor_gas" className="input-base text-xs py-1.5">
+                  <option value="">Proveedor...</option>
+                  <option value="Metrogas">Metrogas</option>
+                  <option value="Gasco">Gasco</option>
+                  <option value="Abastible">Abastible</option>
+                  <option value="Lipigas">Lipigas</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+            </div>
           </div>
-          <p className="text-[10px] text-[#64748B]">Marca solo los servicios que el arrendatario debe pagar aparte.</p>
+          <p className="text-[10px] text-[#64748B]">
+            * Los números de cliente son necesarios para automatizar el seguimiento con Unired. Puedes ingresarlos después si no los tienes a mano.
+          </p>
         </div>
 
         {/* Descripción */}

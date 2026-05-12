@@ -46,8 +46,32 @@ export async function savePropertyAction(formData: FormData) {
   };
 
   try {
-    const { error } = await (supabase as any).from("properties").insert(body);
+    const { data: propData, error } = await (supabase as any)
+      .from("properties")
+      .insert(body)
+      .select()
+      .single();
+
     if (error) return { success: false, error: error.message };
+
+    // Procesar servicios si hay números de cliente
+    const utilities = [
+      { tipo: "agua", n: formData.get("n_cliente_agua"), p: formData.get("proveedor_agua") },
+      { tipo: "luz", n: formData.get("n_cliente_luz"), p: formData.get("proveedor_luz") },
+      { tipo: "gas", n: formData.get("n_cliente_gas"), p: formData.get("proveedor_gas") }
+    ];
+
+    for (const ut of utilities) {
+      if (ut.n && ut.n.toString().trim() !== "") {
+        await supabase.from("utility_accounts").insert({
+          property_id: propData.id,
+          tipo: ut.tipo,
+          proveedor: ut.p?.toString() || "Otro",
+          numero_cliente: ut.n.toString().trim(),
+          monto_deuda: 0,
+        });
+      }
+    }
 
     revalidatePath("/propietario/propiedades");
     revalidatePath("/propietario/servicios");
