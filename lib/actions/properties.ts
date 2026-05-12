@@ -80,3 +80,40 @@ export async function savePropertyAction(formData: FormData) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Registra un arrendatario para una propiedad y activa el estado 'arrendada'
+ */
+export async function registerTenantAction(propertyId: string, formData: FormData) {
+  const supabase = await createAdminClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, error: "No autorizado" };
+
+  const nombre = formData.get("nombre") as string;
+  const email = formData.get("email") as string;
+  const rut = formData.get("rut") as string;
+
+  try {
+    const { error } = await supabase
+      .from("properties")
+      .update({
+        tenant_name: nombre,
+        tenant_email: email,
+        tenant_rut: rut,
+        tiene_contrato: true, // Marcamos como arrendada
+      })
+      .eq("id", propertyId);
+
+    if (error) return { success: false, error: error.message };
+
+    // Aquí en el futuro iría la lógica de envío de email real con Resend
+    console.log(`Simulación: Enviando invitación a ${email} para propiedad ${propertyId}`);
+
+    revalidatePath(`/propietario/propiedades/${propertyId}`);
+    revalidatePath("/propietario/propiedades");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

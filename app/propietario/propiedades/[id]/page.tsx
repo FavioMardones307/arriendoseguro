@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/server";
 import { UtilityAccountManager } from "@/components/properties/UtilityAccountManager";
-import { formatearUF, formatearFechaChile } from "@/lib/chile/format";
+import { TenantRegistrationForm } from "@/components/properties/TenantRegistrationForm";
+import { formatearUF, formatearFechaChile, formatearCLP } from "@/lib/chile/format";
 
 export const metadata: Metadata = {
   title: "Detalle de Propiedad",
@@ -139,20 +140,26 @@ export default async function PropiedadDetailPage({ params }: { params: Promise<
                   <User size={24} className="text-indigo-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-slate-900">María González</p>
-                  <p className="text-xs text-slate-500">RUT: 12.345.678-9 · Verificada ✅</p>
+                  <p className="font-bold text-slate-900">{propiedad.tenant_name || "Arrendatario Registrado"}</p>
+                  <p className="text-xs text-slate-500">RUT: {propiedad.tenant_rut || "No registrado"} · {propiedad.tenant_email || ""}</p>
                 </div>
-                <Link href="#" className="text-xs font-bold text-blue-600 hover:underline">Ver contrato</Link>
+                <div className="flex flex-col items-end gap-1">
+                  <span className="badge badge-success text-[10px]">Contrato Activo</span>
+                  <Link href="#" className="text-[10px] font-bold text-blue-600 hover:underline">Ver contrato</Link>
+                </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-4 text-center">
-                <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
-                  <FileText size={24} className="text-slate-400" />
+              <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center py-4 text-center border-b border-slate-100 pb-6 mb-2">
+                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                    <FileText size={24} className="text-slate-400" />
+                  </div>
+                  <p className="text-sm font-medium text-slate-600">La propiedad está disponible</p>
+                  <p className="text-xs text-slate-400 mt-1">Registra al arrendatario para activar el seguimiento.</p>
                 </div>
-                <p className="text-sm font-medium text-slate-600">No hay contratos activos</p>
-                <Link href="/propietario/contratos/nuevo" className="text-xs font-bold text-blue-600 hover:underline mt-2">
-                  + Crear nuevo contrato
-                </Link>
+                
+                {/* Nuevo Formulario de Registro */}
+                <TenantRegistrationForm propertyId={id} />
               </div>
             )}
           </div>
@@ -161,7 +168,46 @@ export default async function PropiedadDetailPage({ params }: { params: Promise<
         {/* Columna Derecha: Servicios y Automatización */}
         <div className="space-y-6">
           <div className="card bg-slate-50/50 border-blue-100 shadow-sm">
-            <UtilityAccountManager propertyId={id} initialAccounts={cuentasServicios as any} />
+            <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Servicios Básicos</h3>
+            <div className="space-y-4">
+              {['agua', 'luz', 'gas'].map((tipo) => {
+                const account = cuentasServicios.find((a: any) => a.tipo === tipo);
+                const aplica = tipo === 'agua' ? propiedad.tiene_agua : tipo === 'luz' ? propiedad.tiene_luz : propiedad.tiene_gas;
+                
+                if (!aplica) return null;
+
+                const Icon = tipo === 'agua' ? Droplet : tipo === 'luz' ? Zap : Flame;
+                const deuda = account ? Number(account.monto_deuda || 0) : 0;
+
+                return (
+                  <div key={tipo} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${deuda > 0 ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-500'}`}>
+                        <Icon size={18} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-900 capitalize">{tipo}</p>
+                        {account ? (
+                          <p className={`text-[10px] font-medium ${deuda > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                            {deuda > 0 
+                              ? `Deuda: ${formatearCLP(deuda)} ${account.fecha_vencimiento ? `(Vence ${formatearFechaChile(account.fecha_vencimiento)})` : ''}`
+                              : 'Propiedad sin deuda'}
+                          </p>
+                        ) : (
+                          <p className="text-[10px] text-slate-400">Sin configurar</p>
+                        )}
+                      </div>
+                    </div>
+                    <UtilityAccountManager 
+                      propertyId={id} 
+                      tipo={tipo as any} 
+                      variant="icon" 
+                      existingAccount={account} 
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           <div className="card">
