@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { formatearCLP, formatearFechaChile } from "@/lib/chile/format";
 import { UtilityAccountManager } from "@/components/properties/UtilityAccountManager";
+import { SyncUtilityButton } from "@/components/properties/SyncUtilityButton";
 
 export const metadata: Metadata = {
   title: "Gestión de Servicios Básicos | ArriendoSeguro",
@@ -199,9 +200,12 @@ function ServiceCard({ tipo, aplica, cuenta, propertyId }: { tipo: 'agua' | 'luz
             <p className={`text-lg font-black mt-2 ${hasDebt ? "text-red-600" : "text-[#10B981]"}`}>
               {formatearCLP(cuenta.monto_deuda || 0)}
             </p>
-            {cuenta.ultima_consulta && (
+            <div className="pt-2">
+              <SyncUtilityButton accountId={cuenta.id} />
+            </div>
+            {cuenta.ultimo_sincro && (
               <p className="text-[9px] text-[#94A3B8] mt-1">
-                Actualizado: {formatearFechaChile(cuenta.ultima_consulta)}
+                Sincronizado: {formatearFechaChile(cuenta.ultimo_sincro)}
               </p>
             )}
           </>
