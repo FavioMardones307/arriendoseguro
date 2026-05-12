@@ -132,7 +132,8 @@ export async function consultarDeudaUnired(
       return {
         monto: 0,
         vencimiento: null,
-        pagado: true // Si no hay cuotas, asumimos que está pagado
+        pagado: true,
+        error: "No se encontraron deudas pendientes en Unired."
       };
     }
 
@@ -151,13 +152,13 @@ export async function consultarDeudaUnired(
       pagado: (cuota.monto || 0) === 0
     };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("[Unired] Error al consultar deuda:", error);
     return {
       monto: 0,
       vencimiento: null,
       pagado: false,
-      error: "Error de conexión con el portal de pagos."
+      error: `Falla de conexión con Unired: ${error.message}`
     };
   }
 }

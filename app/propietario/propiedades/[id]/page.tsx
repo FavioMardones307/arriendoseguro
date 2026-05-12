@@ -10,9 +10,33 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { UtilityAccountManager } from "@/components/properties/UtilityAccountManager";
 import { TenantRegistrationForm } from "@/components/properties/TenantRegistrationForm";
 import { formatearUF, formatearFechaChile, formatearCLP } from "@/lib/chile/format";
+import { syncUtilityDebtAction } from "@/lib/actions/utilities";
+import { RefreshCw } from "lucide-react";
+
+// Componente cliente para el botón de sincronización manual
+function SyncButton({ accountId }: { accountId: string }) {
+  return (
+    <button 
+      onClick={async (e) => {
+        e.preventDefault();
+        const btn = e.currentTarget;
+        btn.classList.add('animate-spin');
+        const res = await syncUtilityDebtAction(accountId);
+        btn.classList.remove('animate-spin');
+        if (res.success) {
+          window.location.reload();
+        }
+      }}
+      className="p-1.5 hover:bg-blue-50 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"
+      title="Actualizar deuda desde Unired"
+    >
+      <RefreshCw size={14} />
+    </button>
+  );
+}
 
 export const metadata: Metadata = {
-  title: "Detalle de Propiedad",
+  title: "Detalle de Propiedad | ArriendoSeguro",
 };
 
 export default async function PropiedadDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -188,22 +212,30 @@ export default async function PropiedadDetailPage({ params }: { params: Promise<
                       <div>
                         <p className="text-xs font-bold text-slate-900 capitalize">{tipo}</p>
                         {account ? (
-                          <p className={`text-[10px] font-medium ${deuda > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                            {deuda > 0 
-                              ? `Deuda: ${formatearCLP(deuda)} ${account.fecha_vencimiento ? `(Vence ${formatearFechaChile(account.fecha_vencimiento)})` : ''}`
-                              : 'Propiedad sin deuda'}
-                          </p>
+                          <div className="flex flex-col">
+                            <p className={`text-[10px] font-medium ${deuda > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                              {deuda > 0 
+                                ? `Deuda: ${formatearCLP(deuda)} ${account.fecha_vencimiento ? `(Vence ${formatearFechaChile(account.fecha_vencimiento)})` : ''}`
+                                : 'Propiedad sin deuda'}
+                            </p>
+                            {account.ultimo_sincro && (
+                              <p className="text-[8px] text-slate-400">Sincronizado: {formatearFechaChile(account.ultimo_sincro)}</p>
+                            )}
+                          </div>
                         ) : (
                           <p className="text-[10px] text-slate-400">Sin configurar</p>
                         )}
                       </div>
                     </div>
-                    <UtilityAccountManager 
-                      propertyId={id} 
-                      tipo={tipo as any} 
-                      variant="icon" 
-                      existingAccount={account} 
-                    />
+                    <div className="flex items-center gap-1">
+                      {account && <SyncButton accountId={account.id} />}
+                      <UtilityAccountManager 
+                        propertyId={id} 
+                        tipo={tipo as any} 
+                        variant="icon" 
+                        existingAccount={account} 
+                      />
+                    </div>
                   </div>
                 );
               })}

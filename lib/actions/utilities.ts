@@ -69,3 +69,55 @@ export async function deleteUtilityAccount(id: string) {
   revalidatePath("/propietario");
   return { success: true };
 }
+
+/**
+ * Sincroniza la deuda de una cuenta específica con Unired.cl
+ */
+export async function syncUtilityDebtAction(accountId: string) {
+  const supabase = await createAdminClient();
+  const { consultarDeudaUnired } = await import("@/lib/servicios/unired");
+
+  try {
+    // 1. Obtener datos de la cuenta
+    const { data: account, error: fetchError } = await supabase
+      .from("utility_accounts")
+      .select("*")
+      .eq("id", accountId)
+      .single();
+
+    if (fetchError || !account) throw new Error("Cuenta no encontrada");
+
+    // 2. Consultar Unired
+    const result = await consultarDeudaUnired(
+      account.tipo,
+      account.proveedor,
+      account.numero_cliente
+    );
+
+    if (result.error) throw new Error(result.error);
+
+    // 3. Actualizar base de datos
+    const { error: updateError } = await supabase
+      .from("utility_accounts")
+      .update({
+        monto_deuda: result.monto,
+        fecha_vencimiento: result.vencimiento,
+        ultimo_sincro: new Date().toISOString()
+      })
+      .eq("id", accountId);
+
+    if (updateError) throw updateError;
+
+    revalidatePath("/propietario");
+    revalidatePath(`/propietario/propiedades/${account.property_id}`);
+    
+    return { 
+      success: true, 
+      monto: result.monto,
+      vencimiento: result.vencimiento
+    };
+  } catch (error: any) {
+    console.error("[SyncAction] Error:", error.message);
+    return { success: false, error: error.message };
+  }
+}

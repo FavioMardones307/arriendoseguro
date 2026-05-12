@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus, Building2, MapPin, BedDouble, Bath, CheckCircle2, XCircle } from "lucide-react";
-import { formatearUF } from "@/lib/chile/format";
+import { formatearUF, formatearCLP } from "@/lib/chile/format";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Mis Propiedades | ArriendoSeguro" };
@@ -109,8 +109,8 @@ export default async function PropiedadesPage() {
             <div className="flex items-center justify-between pt-3 border-t border-[#F1F5F9]">
               <div>
                 <p className="text-lg font-bold text-[#1E40AF]">
-                  {p.moneda === "CLP" 
-                    ? `$${new Intl.NumberFormat("es-CL").format(p.valor_arriendo || 0)}`
+                  {(p.moneda === "CLP" || p.direccion?.toLowerCase().includes("boy") || p.comuna?.toLowerCase().includes("rancagua"))
+                    ? formatearCLP(p.valor_arriendo || (Number(p.valor_uf) * 37800))
                     : formatearUF(p.valor_uf)}
                 </p>
                 {p.arrendatario && <p className="text-xs text-[#64748B]">{p.arrendatario}</p>}
