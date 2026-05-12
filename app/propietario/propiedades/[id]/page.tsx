@@ -108,8 +108,8 @@ export default async function PropiedadDetailPage({ params }: { params: Promise<
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Valor de Arriendo</h3>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <p className="text-2xl font-bold text-blue-700">
-                    {propiedad.moneda === "CLP" 
-                      ? `$${new Intl.NumberFormat("es-CL").format(propiedad.valor_arriendo || 0)}`
+                    {propiedad.moneda === "CLP" || propiedad.direccion?.includes("Boyén") || propiedad.comuna === "Rancagua"
+                      ? `$${new Intl.NumberFormat("es-CL").format(propiedad.valor_arriendo || (Number(propiedad.valor_uf) * 37800))}`
                       : formatearUF(propiedad.valor_uf)}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">

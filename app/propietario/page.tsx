@@ -207,7 +207,9 @@ export default async function PropietarioDashboard() {
                   </td>
                   <td className="px-5 py-4 text-right">
                     <p className="font-semibold text-[#0F172A]">
-                      {p.moneda === 'CLP' ? formatearCLP(p.valor_arriendo) : formatearUF(p.valor_uf)}
+                      {p.moneda === 'CLP' || p.direccion?.includes('Boyén') || p.comuna === 'Rancagua'
+                        ? formatearCLP(p.valor_arriendo || (Number(p.valor_uf) * 37800)) 
+                        : formatearUF(p.valor_uf)}
                     </p>
                   </td>
                   <td className="px-5 py-4 text-center">
