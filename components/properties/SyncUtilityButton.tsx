@@ -34,18 +34,18 @@ export function SyncUtilityButton({ accountId }: SyncUtilityButtonProps) {
     <button 
       onClick={handleSync}
       disabled={isSyncing}
-      className={`p-2 rounded-lg transition-all flex items-center justify-center ${
+      className={`mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
         isSyncing 
-          ? "bg-blue-50 text-blue-400" 
-          : "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:scale-105 active:scale-95"
+          ? "bg-slate-100 text-slate-400 cursor-not-allowed" 
+          : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95"
       }`}
-      title="Actualizar deuda desde Unired"
     >
       {isSyncing ? (
-        <Loader2 size={16} className="animate-spin" />
+        <Loader2 size={12} className="animate-spin" />
       ) : (
-        <RefreshCw size={16} />
+        <RefreshCw size={12} />
       )}
+      {isSyncing ? "Consultando..." : "Actualizar deuda"}
     </button>
   );
 }

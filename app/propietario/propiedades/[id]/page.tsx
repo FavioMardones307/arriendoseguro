@@ -198,6 +198,7 @@ export default async function PropiedadDetailPage({ params }: { params: Promise<
                             {account.ultimo_sincro && (
                               <p className="text-[8px] text-slate-400">Sincronizado: {formatearFechaChile(account.ultimo_sincro)}</p>
                             )}
+                            <SyncUtilityButton accountId={account.id} />
                           </div>
                         ) : (
                           <p className="text-[10px] text-slate-400">Sin configurar</p>
@@ -205,7 +206,6 @@ export default async function PropiedadDetailPage({ params }: { params: Promise<
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      {account && <SyncUtilityButton accountId={account.id} />}
                       <UtilityAccountManager 
                         propertyId={id} 
                         tipo={tipo as any} 
