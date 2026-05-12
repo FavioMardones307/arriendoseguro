@@ -20,7 +20,7 @@ const UNIRED_AUTH = "Basic OSUyYIRGeWpHWzZFOMHFYcHVBCfg3JTJmdFZMOTFVa21KZHB2SkxQ
  */
 const PROVEEDORES_IDS: Record<string, { id: number; nombre: string; rubro: number }> = {
   // AGUA
-  "Aguas Andinas": { id: 60, nombre: "Aguas Andinas", rubro: 60 },
+  "Aguas Andinas": { id: 75, nombre: "Aguas Andinas", rubro: 75 },
   "Aguas Cordillera": { id: 60, nombre: "Aguas Cordillera", rubro: 60 },
   "Aguas Manquehue": { id: 60, nombre: "Aguas Manquehue", rubro: 60 },
   "Essbio": { id: 70, nombre: "Essbio", rubro: 70 },
@@ -75,6 +75,7 @@ export async function consultarDeudaUnired(
       headers: {
         "Authorization": UNIRED_AUTH,
         "Content-Type": "application/json",
+        "Accept": "application/json, text/plain, */*",
         "Origin": "https://www.unired.cl",
         "Referer": "https://www.unired.cl/"
       },
