@@ -9,31 +9,8 @@ import {
 import { createAdminClient } from "@/lib/supabase/server";
 import { UtilityAccountManager } from "@/components/properties/UtilityAccountManager";
 import { TenantRegistrationForm } from "@/components/properties/TenantRegistrationForm";
+import { SyncUtilityButton } from "@/components/properties/SyncUtilityButton";
 import { formatearUF, formatearFechaChile, formatearCLP } from "@/lib/chile/format";
-import { syncUtilityDebtAction } from "@/lib/actions/utilities";
-import { RefreshCw } from "lucide-react";
-
-// Componente cliente para el botón de sincronización manual
-function SyncButton({ accountId }: { accountId: string }) {
-  return (
-    <button 
-      onClick={async (e) => {
-        e.preventDefault();
-        const btn = e.currentTarget;
-        btn.classList.add('animate-spin');
-        const res = await syncUtilityDebtAction(accountId);
-        btn.classList.remove('animate-spin');
-        if (res.success) {
-          window.location.reload();
-        }
-      }}
-      className="p-1.5 hover:bg-blue-50 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"
-      title="Actualizar deuda desde Unired"
-    >
-      <RefreshCw size={14} />
-    </button>
-  );
-}
 
 export const metadata: Metadata = {
   title: "Detalle de Propiedad | ArriendoSeguro",
@@ -228,7 +205,7 @@ export default async function PropiedadDetailPage({ params }: { params: Promise<
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      {account && <SyncButton accountId={account.id} />}
+                      {account && <SyncUtilityButton accountId={account.id} />}
                       <UtilityAccountManager 
                         propertyId={id} 
                         tipo={tipo as any} 
