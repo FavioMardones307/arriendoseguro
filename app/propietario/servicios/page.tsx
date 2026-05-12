@@ -203,9 +203,9 @@ function ServiceCard({ tipo, aplica, cuenta, propertyId }: { tipo: 'agua' | 'luz
             <div className="pt-2">
               <SyncUtilityButton accountId={cuenta.id} />
             </div>
-            {cuenta.ultimo_sincro && (
+            {cuenta.ultima_consulta && (
               <p className="text-[9px] text-[#94A3B8] mt-1">
-                Sincronizado: {formatearFechaChile(cuenta.ultimo_sincro)}
+                Sincronizado: {formatearFechaChile(cuenta.ultima_consulta)}
               </p>
             )}
           </>

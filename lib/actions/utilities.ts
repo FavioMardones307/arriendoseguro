@@ -114,7 +114,7 @@ export async function syncUtilityDebtAction(accountId: string) {
       .update({
         monto_deuda: result.monto,
         fecha_vencimiento: result.vencimiento,
-        ultimo_sincro: new Date().toISOString()
+        ultima_consulta: new Date().toISOString()
       })
       .eq("id", accountId);
 
