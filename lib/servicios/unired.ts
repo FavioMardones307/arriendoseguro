@@ -12,8 +12,21 @@ export interface DatosDeuda {
   error?: string;
 }
 
-// Token extraído de las capturas de red del portal de Unired
 const UNIRED_AUTH = "Basic OSUyYIRGeWpHWzZFOMHFYcHVBCfg3JTJmdFZMOTFVa21KZHB2SkxQZHRmcjIYOVpqNjc3ZnR1NTDSWXNscWVDeFg=";
+
+const BROWSER_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Accept-Language": "es-CL,es;q=0.9,en;q=0.8",
+  "Accept-Encoding": "gzip, deflate, br",
+  "Cache-Control": "no-cache",
+  "Pragma": "no-cache",
+  "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124"',
+  "sec-ch-ua-mobile": "?0",
+  "sec-ch-ua-platform": '"Windows"',
+  "sec-fetch-dest": "empty",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-site": "same-site",
+};
 
 /**
  * Mapeo de proveedores a sus IDs internos en Unired
@@ -74,11 +87,12 @@ export async function consultarDeudaUnired(
     const resp1 = await fetch("https://apiportal.unired.cl/api/Consulta/GeneraConsultaPagoCuentasExpressHome", {
       method: "POST",
       headers: {
+        ...BROWSER_HEADERS,
         "Authorization": UNIRED_AUTH,
         "Content-Type": "application/json",
         "Accept": "application/json, text/plain, */*",
         "Origin": "https://www.unired.cl",
-        "Referer": "https://www.unired.cl/"
+        "Referer": "https://www.unired.cl/",
       },
       body: JSON.stringify([{
         NombreServicio: prov.nombre,
@@ -104,8 +118,11 @@ export async function consultarDeudaUnired(
     await fetch("https://apiportal.unired.cl/api/Consulta/ConsultaBoletaHome", {
       method: "POST",
       headers: {
+        ...BROWSER_HEADERS,
         "Authorization": UNIRED_AUTH,
         "Content-Type": "application/json",
+        "Origin": "https://www.unired.cl",
+        "Referer": "https://www.unired.cl/",
       },
       body: JSON.stringify({
         idConsulta: claveConsulta,
@@ -118,8 +135,11 @@ export async function consultarDeudaUnired(
     const resp3 = await fetch("https://apiportal.unired.cl/api/ObtieneConsultaXcash", {
       method: "POST",
       headers: {
+        ...BROWSER_HEADERS,
         "Authorization": UNIRED_AUTH,
         "Content-Type": "application/json",
+        "Origin": "https://www.unired.cl",
+        "Referer": "https://www.unired.cl/",
       },
       body: JSON.stringify({
         idCanal: 1,

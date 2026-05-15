@@ -94,7 +94,10 @@ export async function syncUtilityDebtAction(accountId: string) {
       account.numero_cliente
     );
 
-    if (result.error && !result.monto) throw new Error(result.error);
+    // Si Unired falla (devuelve HTML, timeout, etc.), no sobreescribir BD
+    if (result.error && !result.monto) {
+      return { success: false, error: result.error };
+    }
 
     // 3. Actualizar base de datos
     const { error: updateError } = await supabase
