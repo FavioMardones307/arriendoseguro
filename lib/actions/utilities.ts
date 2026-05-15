@@ -91,10 +91,10 @@ export async function syncUtilityDebtAction(accountId: string) {
     // Si la red está bloqueada, usamos los datos verificados manualmente hoy
     let result;
     if (account.numero_cliente === "2712299-k") {
-      result = { monto: 20870, vencimiento: "2026-05-05", pagado: false };
+      result = { monto: 20870, vencimiento: "2026-05-05", pagado: false, saldo_anterior: 0 };
       console.log("[Sync] Usando datos de respaldo para Aguas Andinas");
     } else if (account.numero_cliente === "3088257-1") {
-      result = { monto: 0, vencimiento: null, pagado: true };
+      result = { monto: 0, vencimiento: null, pagado: true, saldo_anterior: 0 };
       console.log("[Sync] Usando datos de respaldo para Enel");
     } else {
       // 2. Consultar Unired real
@@ -113,6 +113,7 @@ export async function syncUtilityDebtAction(accountId: string) {
       .from("utility_accounts")
       .update({
         monto_deuda: result.monto,
+        saldo_anterior: result.saldo_anterior ?? 0,
         fecha_vencimiento: result.vencimiento,
         ultima_consulta: new Date().toISOString()
       })

@@ -8,6 +8,7 @@ export interface DatosDeuda {
   monto: number;
   vencimiento: string | null;
   pagado: boolean;
+  saldo_anterior?: number;
   error?: string;
 }
 
@@ -127,13 +128,15 @@ export async function consultarDeudaUnired(
     });
 
     const data3 = await resp3.json();
-    const cuota = data3.body?.cuenta?.gruposCuotas?.[0]?.cuotas?.[0];
+    const gruposCuotas = data3.body?.cuenta?.gruposCuotas || [];
+    const cuota = gruposCuotas[0]?.cuotas?.[0];
 
     if (!cuota) {
       return {
         monto: 0,
         vencimiento: null,
         pagado: true,
+        saldo_anterior: 0,
         error: "No se encontraron deudas pendientes en Unired."
       };
     }
@@ -147,10 +150,18 @@ export async function consultarDeudaUnired(
       }
     }
 
+    // Saldo anterior: puede venir como campo en la cuota o como segunda cuota del grupo
+    const saldoAnterior =
+      cuota.saldoAnterior ||
+      cuota.montoSaldoAnterior ||
+      gruposCuotas[0]?.cuotas?.[1]?.monto ||
+      0;
+
     return {
       monto: cuota.monto || 0,
       vencimiento: vencimiento,
-      pagado: (cuota.monto || 0) === 0
+      pagado: (cuota.monto || 0) === 0,
+      saldo_anterior: saldoAnterior
     };
 
   } catch (error: any) {

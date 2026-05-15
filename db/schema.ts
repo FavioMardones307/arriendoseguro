@@ -558,6 +558,7 @@ export const utilityAccounts = pgTable(
     proveedor: text("proveedor").notNull(),
     numero_cliente: text("numero_cliente").notNull(),
     monto_deuda: decimal("monto_deuda", { precision: 12, scale: 2 }).notNull().default("0"),
+    saldo_anterior: decimal("saldo_anterior", { precision: 12, scale: 2 }).default("0"),
     fecha_vencimiento: date("fecha_vencimiento"),
     ultima_consulta: timestamp("ultima_consulta", { withTimezone: true }),
     ...timestamps,

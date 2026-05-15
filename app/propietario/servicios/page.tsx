@@ -2,9 +2,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/server";
-import { 
-  Zap, Droplet, Flame, AlertCircle, CheckCircle2, 
-  Search, ArrowRight, ExternalLink, Settings2,
+import {
+  Zap, Droplet, Flame,
+  ArrowRight,
   Building2, Info
 } from "lucide-react";
 import { formatearCLP, formatearFechaChile } from "@/lib/chile/format";
@@ -160,6 +160,26 @@ export default async function ServiciosPage() {
   );
 }
 
+function getFechaVencimientoInfo(fechaVencimiento: string | null): { label: string; color: string } | null {
+  if (!fechaVencimiento) return null;
+
+  // Fecha de hoy en Chile (UTC-3, sin considerar DST para simplificar)
+  const ahora = new Date();
+  const offsetChile = -3 * 60;
+  const chileMs = ahora.getTime() + (ahora.getTimezoneOffset() + offsetChile) * 60000;
+  const hoyStr = new Date(chileMs).toISOString().slice(0, 10);
+
+  if (fechaVencimiento < hoyStr) {
+    const [y, m, d] = fechaVencimiento.split("-");
+    return { label: `Vencida el ${d}/${m}/${y}`, color: "text-red-600" };
+  }
+  if (fechaVencimiento === hoyStr) {
+    return { label: "Vence hoy", color: "text-orange-500" };
+  }
+  const [y, m, d] = fechaVencimiento.split("-");
+  return { label: `Vence el ${d}/${m}/${y}`, color: "text-slate-500" };
+}
+
 function ServiceCard({ tipo, aplica, cuenta, propertyId }: { tipo: 'agua' | 'luz' | 'gas', aplica: boolean, cuenta: any, propertyId: string }) {
   if (!aplica) {
     return (
@@ -200,6 +220,17 @@ function ServiceCard({ tipo, aplica, cuenta, propertyId }: { tipo: 'agua' | 'luz
             <p className={`text-lg font-black mt-2 ${hasDebt ? "text-red-600" : "text-[#10B981]"}`}>
               {formatearCLP(cuenta.monto_deuda || 0)}
             </p>
+            {(() => {
+              const fechaInfo = getFechaVencimientoInfo(cuenta.fecha_vencimiento);
+              return fechaInfo ? (
+                <p className={`text-[10px] font-semibold ${fechaInfo.color}`}>{fechaInfo.label}</p>
+              ) : null;
+            })()}
+            {Number(cuenta.saldo_anterior) > 0 && (
+              <p className="text-[10px] text-orange-600 font-medium">
+                Saldo anterior: {formatearCLP(Number(cuenta.saldo_anterior))}
+              </p>
+            )}
             <div className="pt-2">
               <SyncUtilityButton accountId={cuenta.id} />
             </div>
