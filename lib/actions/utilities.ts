@@ -87,24 +87,12 @@ export async function syncUtilityDebtAction(accountId: string) {
 
     if (fetchError || !account) throw new Error("Cuenta no encontrada");
 
-    // --- HOTFIX / RESPALDO DE DATOS REALES PARA FAVIO ---
-    // Si la red está bloqueada, usamos los datos verificados manualmente hoy
-    let result;
-    if (account.numero_cliente === "2712299-k") {
-      result = { monto: 20870, vencimiento: "2026-05-05", pagado: false, saldo_anterior: 0 };
-      console.log("[Sync] Usando datos de respaldo para Aguas Andinas");
-    } else if (account.numero_cliente === "3088257-1") {
-      result = { monto: 0, vencimiento: null, pagado: true, saldo_anterior: 0 };
-      console.log("[Sync] Usando datos de respaldo para Enel");
-    } else {
-      // 2. Consultar Unired real
-      result = await consultarDeudaUnired(
-        account.tipo,
-        account.proveedor,
-        account.numero_cliente
-      );
-    }
-    // ---------------------------------------------------
+    // 2. Consultar Unired real
+    const result = await consultarDeudaUnired(
+      account.tipo,
+      account.proveedor,
+      account.numero_cliente
+    );
 
     if (result.error && !result.monto) throw new Error(result.error);
 
