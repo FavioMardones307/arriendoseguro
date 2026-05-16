@@ -2,7 +2,6 @@
  * Servicio para interactuar con Unired.cl y obtener deudas de servicios básicos.
  */
 
-import { tipoServicioEnum } from "@/db/schema";
 
 export interface DatosDeuda {
   monto: number;
@@ -84,7 +83,7 @@ export async function consultarDeudaUnired(
 
   try {
     // PASO 1: Generar consulta para obtener IdCuenta
-    const resp1 = await fetch("https://apiportal.unired.cl/api/Consulta/GeneraConsultaPagoCuentasExpressHome", {
+    const resp1 = await fetch("https://apiportal.unired.cl/apiAgregaCuentaExpress/GeneraConsultaPagoCuentasExpressHome", {
       method: "POST",
       headers: {
         ...BROWSER_HEADERS,
@@ -115,7 +114,7 @@ export async function consultarDeudaUnired(
     if (!idCuenta) throw new Error("No se pudo obtener el IdCuenta de Unired.");
 
     // PASO 2: Validar boleta (Necesario para que Unired "active" la consulta)
-    await fetch("https://apiportal.unired.cl/api/Consulta/ConsultaBoletaHome", {
+    await fetch("https://apiportal.unired.cl/api/ConsultaBoletaHome", {
       method: "POST",
       headers: {
         ...BROWSER_HEADERS,

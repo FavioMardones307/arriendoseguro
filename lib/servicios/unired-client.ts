@@ -51,7 +51,7 @@ export async function consultarDeudaUniredClient(
 
   // Paso 1: Obtener IdCuenta
   const data1 = await uniredProxy(
-    "/api/Consulta/GeneraConsultaPagoCuentasExpressHome",
+    "/apiAgregaCuentaExpress/GeneraConsultaPagoCuentasExpressHome",
     [{
       NombreServicio: prov.nombre,
       IdEmpresaRubro: prov.id,
@@ -72,7 +72,7 @@ export async function consultarDeudaUniredClient(
   if (!idCuenta) throw new Error("No se obtuvo IdCuenta de Unired.");
 
   // Paso 2: Activar consulta
-  await uniredProxy("/api/Consulta/ConsultaBoletaHome", {
+  await uniredProxy("/api/ConsultaBoletaHome", {
     idConsulta: claveConsulta,
     idCuenta: claveCuentaToken,
     isMobile: false,
