@@ -1,7 +1,7 @@
 export const runtime = "edge";
 
 const UNIRED_AUTH =
-  "Basic OSUyYIRGeWpHWzZFOMHFYcHVBCfg3JTJmdFZMOTFVa21KZHB2SkxQZHRmcjIYOVpqNjc3ZnR1NTDSWXNscWVDeFg=";
+  "Basic OSUyYlRGeWpHZ2FOMHFYcHVBcFg3JTJmdFZWOTFVa21KZHB2SkxQZHRmcjlYOVpqNjc3ZnR1NkFNTTdSWXNscWVDeFg=";
 
 const UNIRED_HEADERS = {
   Authorization: UNIRED_AUTH,

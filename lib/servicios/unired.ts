@@ -1,7 +1,7 @@
 /**
  * Servicio para interactuar con Unired.cl y obtener deudas de servicios básicos.
+ * Token y endpoints actualizados desde bundle JS de Unired (2026-05-15).
  */
-
 
 export interface DatosDeuda {
   monto: number;
@@ -11,59 +11,46 @@ export interface DatosDeuda {
   error?: string;
 }
 
-const UNIRED_AUTH = "Basic OSUyYIRGeWpHWzZFOMHFYcHVBCfg3JTJmdFZMOTFVa21KZHB2SkxQZHRmcjIYOVpqNjc3ZnR1NTDSWXNscWVDeFg=";
+const UNIRED_AUTH = "Basic OSUyYlRGeWpHZ2FOMHFYcHVBcFg3JTJmdFZWOTFVa21KZHB2SkxQZHRmcjlYOVpqNjc3ZnR1NkFNTTdSWXNscWVDeFg=";
 
 const BROWSER_HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   "Accept-Language": "es-CL,es;q=0.9,en;q=0.8",
-  "Accept-Encoding": "gzip, deflate, br",
-  "Cache-Control": "no-cache",
-  "Pragma": "no-cache",
-  "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124"',
-  "sec-ch-ua-mobile": "?0",
-  "sec-ch-ua-platform": '"Windows"',
   "sec-fetch-dest": "empty",
   "sec-fetch-mode": "cors",
   "sec-fetch-site": "same-site",
 };
 
-/**
- * Mapeo de proveedores a sus IDs internos en Unired
- * TODO: Ampliar esta lista o hacerla dinámica
- */
-const PROVEEDORES_IDS: Record<string, { id: number; nombre: string; rubro: number }> = {
+interface ProveedorConfig {
+  nombre: string;
+  id: number;
+  idIdentificador: number;
+  idTipoMetaDato: number;
+  largo: number;
+  correlativo: string;
+  urlImg: string;
+  descIdentificador: string;
+}
+
+export const PROVEEDORES_IDS: Record<string, ProveedorConfig> = {
   // AGUA
-  "Aguas Andinas": { id: 75, nombre: "Aguas Andinas", rubro: 75 },
-  "Aguas Cordillera": { id: 60, nombre: "Aguas Cordillera", rubro: 60 },
-  "Aguas Manquehue": { id: 60, nombre: "Aguas Manquehue", rubro: 60 },
-  "Essbio": { id: 70, nombre: "Essbio", rubro: 70 },
-  "Esval": { id: 80, nombre: "Esval", rubro: 80 },
-  "Aguas del Valle": { id: 90, nombre: "Aguas del Valle", rubro: 90 },
-  "Aguas Antofagasta": { id: 100, nombre: "Aguas Antofagasta", rubro: 100 },
-  "Aguas Araucanía": { id: 110, nombre: "Aguas Araucanía", rubro: 110 },
-  "Aguas Magallanes": { id: 120, nombre: "Aguas Magallanes", rubro: 120 },
-  "Nuevo Sur": { id: 130, nombre: "Nuevo Sur", rubro: 130 },
-
+  "Aguas Andinas":    { nombre: "Aguas Andinas",   id: 60,  idIdentificador: 75,  idTipoMetaDato: 3, largo: 11, correlativo: "0", urlImg: "AGAANDNUMCLI.jpg", descIdentificador: "Número de Cuenta" },
+  "Aguas Cordillera": { nombre: "Aguas Cordillera", id: 61,  idIdentificador: 76,  idTipoMetaDato: 3, largo: 11, correlativo: "0", urlImg: "AGACORNUMCLI.jpg", descIdentificador: "Número de Cuenta" },
+  "Aguas Manquehue":  { nombre: "Aguas Manquehue",  id: 62,  idIdentificador: 77,  idTipoMetaDato: 3, largo: 11, correlativo: "0", urlImg: "AGAMANNUMCLI.jpg", descIdentificador: "Número de Cuenta" },
+  "Essbio":           { nombre: "Essbio",           id: 16,  idIdentificador: 16,  idTipoMetaDato: 2, largo: 12, correlativo: "0", urlImg: "ESSBIOIDSERV.jpg", descIdentificador: "Número de Cuenta" },
+  "Esval":            { nombre: "Esval",            id: 4,   idIdentificador: 4,   idTipoMetaDato: 2, largo: 10, correlativo: "0", urlImg: "PAGESVNUMSUM.jpg", descIdentificador: "Número de Cuenta" },
+  "Aguas del Valle":  { nombre: "Aguas del Valle",  id: 5,   idIdentificador: 5,   idTipoMetaDato: 2, largo: 10, correlativo: "0", urlImg: "PAGVALNUMSUM.jpg", descIdentificador: "Número de Cuenta" },
   // ELECTRICIDAD
-  "Enel": { id: 25, nombre: "Enel", rubro: 25 },
-  "CGE S.A.": { id: 15, nombre: "CGE S.A.", rubro: 15 },
-  "Chilquinta": { id: 35, nombre: "Chilquinta", rubro: 35 },
-  "Saesa": { id: 45, nombre: "Saesa", rubro: 45 },
-  "Frontel": { id: 55, nombre: "Frontel", rubro: 55 },
-  "Luz del Sur": { id: 65, nombre: "Luz del Sur", rubro: 65 },
-  "Edelmag": { id: 170, nombre: "Edelmag", rubro: 170 },
-
+  "Enel":             { nombre: "Enel",             id: 238, idIdentificador: 345, idTipoMetaDato: 3, largo: 10, correlativo: "0", urlImg: "PAENENNUMCLI.jpg", descIdentificador: "Numero Cliente" },
+  "CGE S.A.":         { nombre: "CGE S.A.",         id: 107, idIdentificador: 125, idTipoMetaDato: 2, largo: 12, correlativo: "0", urlImg: "CGECGENUMCLI.jpg", descIdentificador: "Número de Cuenta" },
+  "Chilquinta":       { nombre: "Chilquinta",       id: 49,  idIdentificador: 64,  idTipoMetaDato: 3, largo: 10, correlativo: "0", urlImg: "BOLCHINIS.jpg",    descIdentificador: "Número de Cuenta" },
+  "Saesa":            { nombre: "Saesa",            id: 162, idIdentificador: 240, idTipoMetaDato: 2, largo: 12, correlativo: "0", urlImg: "SAESANUMSRV.jpg",  descIdentificador: "Número de Cuenta" },
+  "Frontel":          { nombre: "Frontel",          id: 160, idIdentificador: 238, idTipoMetaDato: 2, largo: 12, correlativo: "0", urlImg: "SAEFRTNUMSRV.jpg", descIdentificador: "Número de Cuenta" },
   // GAS
-  "Metrogas": { id: 50, nombre: "Metrogas", rubro: 50 },
-  "Lipigas": { id: 140, nombre: "Lipigas", rubro: 140 },
-  "Abastible": { id: 150, nombre: "Abastible", rubro: 150 },
-  "Gasco": { id: 160, nombre: "Gasco", rubro: 160 },
-  "GasSur": { id: 180, nombre: "GasSur", rubro: 180 },
+  "Metrogas":         { nombre: "Metrogas",         id: 186, idIdentificador: 268, idTipoMetaDato: 2, largo: 12, correlativo: "0", urlImg: "PAGMTGNUMCLI.jpg", descIdentificador: "Número de Cuenta" },
+  "Gasco":            { nombre: "Gasco",            id: 204, idIdentificador: 289, idTipoMetaDato: 2, largo: 10, correlativo: "0", urlImg: "GASMEDNUMCLI.jpg", descIdentificador: "Número de Cuenta" },
 };
 
-/**
- * Consulta la deuda de un servicio en Unired.cl
- */
 export async function consultarDeudaUnired(
   tipo: string,
   proveedor: string,
@@ -73,26 +60,23 @@ export async function consultarDeudaUnired(
 
   const prov = PROVEEDORES_IDS[proveedor];
   if (!prov) {
-    return {
-      monto: 0,
-      vencimiento: null,
-      pagado: false,
-      error: `Proveedor '${proveedor}' no configurado para Unired.`
-    };
+    return { monto: 0, vencimiento: null, pagado: false,
+      error: `Proveedor '${proveedor}' no configurado para Unired.` };
   }
 
+  const headers = {
+    ...BROWSER_HEADERS,
+    "Authorization": UNIRED_AUTH,
+    "Content-Type": "application/json",
+    "Accept": "application/json, text/plain, */*",
+    "Origin": "https://www.unired.cl",
+    "Referer": "https://www.unired.cl/",
+  };
+
   try {
-    // PASO 1: Generar consulta para obtener IdCuenta
+    // PASO 1: Generar consulta
     const resp1 = await fetch("https://apiportal.unired.cl/apiAgregaCuentaExpress/GeneraConsultaPagoCuentasExpressHome", {
-      method: "POST",
-      headers: {
-        ...BROWSER_HEADERS,
-        "Authorization": UNIRED_AUTH,
-        "Content-Type": "application/json",
-        "Accept": "application/json, text/plain, */*",
-        "Origin": "https://www.unired.cl",
-        "Referer": "https://www.unired.cl/",
-      },
+      method: "POST", headers,
       body: JSON.stringify([{
         NombreServicio: prov.nombre,
         IdEmpresaRubro: prov.id,
@@ -100,96 +84,66 @@ export async function consultarDeudaUnired(
         IdConsultaBoleta: -1,
         DetalleIdentificadores: [{
           ValorIdentificador: numeroCliente,
-          DescIdentificador: "Número de Cuenta",
+          DescIdentificador: prov.descIdentificador,
+          IdTipoMetaDato: prov.idTipoMetaDato,
+          Correlativo: prov.correlativo,
+          IdIdentificador: prov.idIdentificador,
+          LargoIdentificador: prov.largo,
           NombreIdentificador: "NUMCLI",
-        }]
-      }])
+          ReIngresa: false,
+          UrlImagenIdentificador: prov.urlImg,
+        }],
+      }]),
     });
 
     const data1 = await resp1.json();
-    const idCuenta = data1.body?.[0]?.IdCuenta;
     const claveConsulta = data1.body?.[0]?.ClaveConsultaBoleta;
     const claveCuentaToken = data1.body?.[0]?.ClaveCuenta;
+    if (!claveConsulta) throw new Error("No se pudo obtener clave de consulta de Unired.");
 
-    if (!idCuenta) throw new Error("No se pudo obtener el IdCuenta de Unired.");
-
-    // PASO 2: Validar boleta (Necesario para que Unired "active" la consulta)
-    await fetch("https://apiportal.unired.cl/api/ConsultaBoletaHome", {
-      method: "POST",
-      headers: {
-        ...BROWSER_HEADERS,
-        "Authorization": UNIRED_AUTH,
-        "Content-Type": "application/json",
-        "Origin": "https://www.unired.cl",
-        "Referer": "https://www.unired.cl/",
-      },
-      body: JSON.stringify({
-        idConsulta: claveConsulta,
-        idCuenta: claveCuentaToken,
-        isMobile: false
-      })
+    // PASO 2: Activar consulta y obtener idCuenta real
+    const resp2 = await fetch("https://apiportal.unired.cl/api/ConsultaBoletaHome", {
+      method: "POST", headers,
+      body: JSON.stringify({ idConsulta: claveConsulta, idCuenta: claveCuentaToken, isMobile: false }),
     });
+    const data2 = await resp2.json();
+    const idCuentaXcash = data2.body?.boletas?.[0]?.idCuenta;
+    if (!idCuentaXcash) {
+      return { monto: 0, vencimiento: null, pagado: true, saldo_anterior: 0,
+        error: "No se encontraron deudas pendientes en Unired." };
+    }
 
-    // PASO 3: Obtener deuda real (Xcash)
+    // PASO 3: Obtener deuda real
     const resp3 = await fetch("https://apiportal.unired.cl/api/ObtieneConsultaXcash", {
-      method: "POST",
-      headers: {
-        ...BROWSER_HEADERS,
-        "Authorization": UNIRED_AUTH,
-        "Content-Type": "application/json",
-        "Origin": "https://www.unired.cl",
-        "Referer": "https://www.unired.cl/",
-      },
-      body: JSON.stringify({
-        idCanal: 1,
-        idCuenta: idCuenta
-      })
+      method: "POST", headers,
+      body: JSON.stringify({ idCanal: 1, idCuenta: idCuentaXcash }),
     });
-
     const data3 = await resp3.json();
     const gruposCuotas = data3.body?.cuenta?.gruposCuotas || [];
     const cuota = gruposCuotas[0]?.cuotas?.[0];
 
     if (!cuota) {
-      return {
-        monto: 0,
-        vencimiento: null,
-        pagado: true,
-        saldo_anterior: 0,
-        error: "No se encontraron deudas pendientes en Unired."
-      };
+      return { monto: 0, vencimiento: null, pagado: true, saldo_anterior: 0 };
     }
 
-    // Formatear fecha: Unired devuelve DD-MM-YYYY, necesitamos YYYY-MM-DD
     let vencimiento = null;
     if (cuota.fechaVencimiento) {
-      const parts = cuota.fechaVencimiento.split("-");
-      if (parts.length === 3) {
-        vencimiento = `${parts[2]}-${parts[1]}-${parts[0]}`;
-      }
+      const [d, m, y] = cuota.fechaVencimiento.split("-");
+      if (d && m && y) vencimiento = `${y}-${m}-${d}`;
     }
 
-    // Saldo anterior: puede venir como campo en la cuota o como segunda cuota del grupo
-    const saldoAnterior =
-      cuota.saldoAnterior ||
-      cuota.montoSaldoAnterior ||
-      gruposCuotas[0]?.cuotas?.[1]?.monto ||
-      0;
+    const saldo_anterior = cuota.saldoAnterior || gruposCuotas[0]?.cuotas?.[1]?.monto || 0;
 
     return {
       monto: cuota.monto || 0,
-      vencimiento: vencimiento,
+      vencimiento,
       pagado: (cuota.monto || 0) === 0,
-      saldo_anterior: saldoAnterior
+      saldo_anterior,
     };
 
   } catch (error: any) {
-    console.error("[Unired] Error al consultar deuda:", error);
-    return {
-      monto: 0,
-      vencimiento: null,
-      pagado: false,
-      error: `Falla de conexión con Unired: ${error.message}`
-    };
+    console.error("[Unired] Error:", error.message);
+    return { monto: 0, vencimiento: null, pagado: false,
+      error: `Falla de conexión con Unired: ${error.message}` };
   }
 }
