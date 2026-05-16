@@ -34,16 +34,18 @@ export async function POST(req: Request) {
     });
 
     const contentType = uniredRes.headers.get("content-type") || "";
+    const rawText = await uniredRes.text();
+    console.log("[UniredProxy] Status:", uniredRes.status, "| CT:", contentType);
+    console.log("[UniredProxy] Body:", rawText.substring(0, 500));
+
     if (!contentType.includes("json")) {
-      const text = await uniredRes.text();
-      console.error("[UniredProxy] Respuesta no-JSON:", uniredRes.status, text.substring(0, 200));
       return Response.json(
-        { error: `Unired respondió ${uniredRes.status} (no JSON)` },
+        { error: `Unired respondió ${uniredRes.status} (no JSON)`, raw: rawText.substring(0, 300) },
         { status: 502 }
       );
     }
 
-    const data = await uniredRes.json();
+    const data = JSON.parse(rawText);
     return Response.json(data);
   } catch (err: any) {
     console.error("[UniredProxy] Error:", err.message);
