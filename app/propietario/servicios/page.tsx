@@ -232,7 +232,7 @@ function ServiceCard({ tipo, aplica, cuenta, propertyId }: { tipo: 'agua' | 'luz
               </p>
             )}
             <div className="pt-2">
-              <SyncUtilityButton accountId={cuenta.id} />
+              <SyncUtilityButton accountId={cuenta.id} proveedor={cuenta.proveedor} numeroCliente={cuenta.numero_cliente} />
             </div>
             {cuenta.ultima_consulta && (
               <p className="text-[9px] text-[#94A3B8] mt-1">
