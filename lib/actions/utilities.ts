@@ -56,6 +56,26 @@ export async function saveUtilityAccount(formData: {
   return { success: true };
 }
 
+export async function marcarServicioPagado(accountId: string) {
+  const supabase = await createAdminClient();
+
+  const { error } = await supabase
+    .from("utility_accounts")
+    .update({
+      monto_deuda: 0,
+      saldo_anterior: 0,
+      fecha_vencimiento: null,
+      ultima_consulta: new Date().toISOString(),
+    })
+    .eq("id", accountId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/propietario/servicios");
+  revalidatePath("/propietario");
+  return { success: true };
+}
+
 export async function deleteUtilityAccount(id: string) {
   const supabase = await createAdminClient();
   const { error } = await supabase

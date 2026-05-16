@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw, Loader2 } from "lucide-react";
+import { RefreshCw, Loader2, CheckCircle } from "lucide-react";
 import { consultarDeudaUniredClient } from "@/lib/servicios/unired-client";
+import { marcarServicioPagado } from "@/lib/actions/utilities";
 import { toast } from "sonner";
 
 interface SyncUtilityButtonProps {
@@ -13,14 +14,13 @@ interface SyncUtilityButtonProps {
 
 export function SyncUtilityButton({ accountId, proveedor, numeroCliente }: SyncUtilityButtonProps) {
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isMarking, setIsMarking] = useState(false);
 
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      // Llamada a Unired directamente desde el browser (evita bloqueo de IPs de Vercel)
       const resultado = await consultarDeudaUniredClient(proveedor, numeroCliente);
 
-      // Enviar resultado al servidor para guardar en BD
       const res = await fetch("/api/utilities/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,7 +38,7 @@ export function SyncUtilityButton({ accountId, proveedor, numeroCliente }: SyncU
       toast.success(
         resultado.monto === 0
           ? "Servicio al día ✓"
-          : `Deuda actualizada: $${new Intl.NumberFormat("es-CL").format(resultado.monto)}`
+          : `Deuda: $${new Intl.NumberFormat("es-CL").format(resultado.monto)}`
       );
       window.location.reload();
     } catch (error: any) {
@@ -48,22 +48,47 @@ export function SyncUtilityButton({ accountId, proveedor, numeroCliente }: SyncU
     }
   };
 
+  const handleMarkPaid = async () => {
+    if (!confirm("¿Confirmas que este servicio está pagado? Se actualizará a $0.")) return;
+    setIsMarking(true);
+    try {
+      await marcarServicioPagado(accountId);
+      toast.success("Marcado como pagado ✓");
+      window.location.reload();
+    } catch (error: any) {
+      toast.error("Error: " + error.message);
+    } finally {
+      setIsMarking(false);
+    }
+  };
+
   return (
-    <button
-      onClick={handleSync}
-      disabled={isSyncing}
-      className={`mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-        isSyncing
-          ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-          : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95"
-      }`}
-    >
-      {isSyncing ? (
-        <Loader2 size={12} className="animate-spin" />
-      ) : (
-        <RefreshCw size={12} />
-      )}
-      {isSyncing ? "Consultando..." : "Actualizar deuda"}
-    </button>
+    <div className="flex flex-col gap-1.5 pt-2">
+      <button
+        onClick={handleSync}
+        disabled={isSyncing || isMarking}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+          isSyncing
+            ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+            : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95"
+        }`}
+      >
+        {isSyncing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+        {isSyncing ? "Consultando..." : "Actualizar deuda"}
+      </button>
+
+      <button
+        onClick={handleMarkPaid}
+        disabled={isSyncing || isMarking}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+          isMarking
+            ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+            : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 active:scale-95"
+        }`}
+      >
+        {isMarking ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+        {isMarking ? "Guardando..." : "Marcar como pagado"}
+      </button>
+    </div>
   );
 }
