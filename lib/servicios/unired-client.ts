@@ -1,10 +1,8 @@
 /**
- * Consulta Unired desde el browser del usuario.
- * Esto evita el bloqueo de IPs de Vercel (data center) — las IPs residenciales
- * de los usuarios no están bloqueadas por Unired.
+ * Consulta Unired a través de nuestro proxy Edge (/api/proxy/unired).
+ * El proxy corre en Cloudflare Edge (IPs distintas a Lambda), lo que evita
+ * el bloqueo de Unired a IPs de data center de AWS.
  */
-
-const UNIRED_AUTH = "Basic OSUyYIRGeWpHWzZFOMHFYcHVBCfg3JTJmdFZMOTFVa21KZHB2SkxQZHRmcjIYOVpqNjc3ZnR1NTDSWXNscWVDeFg=";
 
 export const PROVEEDORES_IDS: Record<string, { id: number; nombre: string }> = {
   "Aguas Andinas":    { id: 75,  nombre: "Aguas Andinas" },
@@ -31,6 +29,19 @@ export interface ResultadoDeuda {
   saldo_anterior: number;
 }
 
+async function uniredProxy(endpoint: string, payload: unknown) {
+  const res = await fetch("/api/proxy/unired", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ endpoint, payload }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(err.error || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function consultarDeudaUniredClient(
   proveedor: string,
   numeroCliente: string
@@ -38,58 +49,41 @@ export async function consultarDeudaUniredClient(
   const prov = PROVEEDORES_IDS[proveedor];
   if (!prov) throw new Error(`Proveedor '${proveedor}' no configurado.`);
 
-  const headers = {
-    Authorization: UNIRED_AUTH,
-    "Content-Type": "application/json",
-    Accept: "application/json, text/plain, */*",
-    Origin: "https://www.unired.cl",
-    Referer: "https://www.unired.cl/",
-  };
-
   // Paso 1: Obtener IdCuenta
-  const resp1 = await fetch(
-    "https://apiportal.unired.cl/api/Consulta/GeneraConsultaPagoCuentasExpressHome",
-    {
-      method: "POST",
-      headers,
-      body: JSON.stringify([{
-        NombreServicio: prov.nombre,
-        IdEmpresaRubro: prov.id,
-        IdEmpresaRubroPadre: -10,
-        IdConsultaBoleta: -1,
-        DetalleIdentificadores: [{
-          ValorIdentificador: numeroCliente,
-          DescIdentificador: "Número de Cuenta",
-          NombreIdentificador: "NUMCLI",
-        }],
-      }]),
-    }
+  const data1 = await uniredProxy(
+    "/api/Consulta/GeneraConsultaPagoCuentasExpressHome",
+    [{
+      NombreServicio: prov.nombre,
+      IdEmpresaRubro: prov.id,
+      IdEmpresaRubroPadre: -10,
+      IdConsultaBoleta: -1,
+      DetalleIdentificadores: [{
+        ValorIdentificador: numeroCliente,
+        DescIdentificador: "Número de Cuenta",
+        NombreIdentificador: "NUMCLI",
+      }],
+    }]
   );
 
-  if (!resp1.ok) throw new Error(`Unired respondió ${resp1.status}`);
-  const data1 = await resp1.json();
-  const idCuenta       = data1.body?.[0]?.IdCuenta;
-  const claveConsulta  = data1.body?.[0]?.ClaveConsultaBoleta;
+  const idCuenta        = data1.body?.[0]?.IdCuenta;
+  const claveConsulta   = data1.body?.[0]?.ClaveConsultaBoleta;
   const claveCuentaToken = data1.body?.[0]?.ClaveCuenta;
 
   if (!idCuenta) throw new Error("No se obtuvo IdCuenta de Unired.");
 
   // Paso 2: Activar consulta
-  await fetch("https://apiportal.unired.cl/api/Consulta/ConsultaBoletaHome", {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ idConsulta: claveConsulta, idCuenta: claveCuentaToken, isMobile: false }),
+  await uniredProxy("/api/Consulta/ConsultaBoletaHome", {
+    idConsulta: claveConsulta,
+    idCuenta: claveCuentaToken,
+    isMobile: false,
   });
 
   // Paso 3: Obtener deuda
-  const resp3 = await fetch("https://apiportal.unired.cl/api/ObtieneConsultaXcash", {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ idCanal: 1, idCuenta }),
+  const data3 = await uniredProxy("/api/ObtieneConsultaXcash", {
+    idCanal: 1,
+    idCuenta,
   });
 
-  if (!resp3.ok) throw new Error(`Unired respondió ${resp3.status} en paso 3`);
-  const data3 = await resp3.json();
   const gruposCuotas = data3.body?.cuenta?.gruposCuotas || [];
   const cuota = gruposCuotas[0]?.cuotas?.[0];
 
