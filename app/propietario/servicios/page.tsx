@@ -160,15 +160,24 @@ export default async function ServiciosPage() {
   );
 }
 
-function getFechaVencimientoInfo(fechaVencimiento: string | null): { label: string; color: string } | null {
-  if (!fechaVencimiento) return null;
-
-  // Fecha de hoy en Chile (UTC-3, sin considerar DST para simplificar)
+function getHoyChile(): string {
   const ahora = new Date();
   const offsetChile = -3 * 60;
   const chileMs = ahora.getTime() + (ahora.getTimezoneOffset() + offsetChile) * 60000;
-  const hoyStr = new Date(chileMs).toISOString().slice(0, 10);
+  return new Date(chileMs).toISOString().slice(0, 10);
+}
 
+type EstadoDeuda = "al_dia" | "pendiente" | "vencida";
+
+function getEstadoDeuda(cuenta: any): EstadoDeuda {
+  if (!cuenta || Number(cuenta.monto_deuda || 0) === 0) return "al_dia";
+  if (!cuenta.fecha_vencimiento) return "pendiente";
+  return cuenta.fecha_vencimiento < getHoyChile() ? "vencida" : "pendiente";
+}
+
+function getFechaVencimientoInfo(fechaVencimiento: string | null): { label: string; color: string } | null {
+  if (!fechaVencimiento) return null;
+  const hoyStr = getHoyChile();
   if (fechaVencimiento < hoyStr) {
     const [y, m, d] = fechaVencimiento.split("-");
     return { label: `Vencida el ${d}/${m}/${y}`, color: "text-red-600" };
@@ -193,17 +202,35 @@ function ServiceCard({ tipo, aplica, cuenta, propertyId }: { tipo: 'agua' | 'luz
   const Icon = tipo === 'agua' ? Droplet : tipo === 'luz' ? Zap : Flame;
   const label = tipo === 'agua' ? 'Agua Potable' : tipo === 'luz' ? 'Energía Eléctrica' : 'Suministro de Gas';
   const hasAccount = !!cuenta;
-  const hasDebt = (cuenta?.monto_deuda || 0) > 0;
+  const estado: EstadoDeuda = hasAccount ? getEstadoDeuda(cuenta) : "al_dia";
+
+  const cardBg = !hasAccount
+    ? "bg-white border-[#E2E8F0] border-dashed shadow-sm"
+    : estado === "vencida"  ? "bg-red-50/50 border-red-100 shadow-sm"
+    : estado === "pendiente" ? "bg-amber-50/50 border-amber-100 shadow-sm"
+    : "bg-green-50/50 border-green-100";
+
+  const iconBg = !hasAccount
+    ? "bg-[#F1F5F9] text-[#64748B]"
+    : estado === "vencida"  ? "bg-red-100 text-red-600"
+    : estado === "pendiente" ? "bg-amber-100 text-amber-600"
+    : "bg-green-100 text-green-600";
+
+  const amountColor = estado === "vencida"  ? "text-red-600"
+    : estado === "pendiente" ? "text-amber-600"
+    : "text-[#10B981]";
 
   return (
-    <div className={`relative rounded-2xl p-5 border transition-all ${hasAccount ? (hasDebt ? "bg-red-50/50 border-red-100 shadow-sm" : "bg-green-50/50 border-green-100") : "bg-white border-[#E2E8F0] border-dashed shadow-sm"}`}>
+    <div className={`relative rounded-2xl p-5 border transition-all ${cardBg}`}>
       <div className="flex items-center justify-between mb-4">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${hasAccount ? (hasDebt ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600") : "bg-[#F1F5F9] text-[#64748B]"}`}>
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg}`}>
           <Icon size={18} className={hasAccount ? "fill-current" : ""} />
         </div>
         {hasAccount ? (
-          hasDebt ? (
-            <span className="text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full uppercase">Con Deuda</span>
+          estado === "vencida" ? (
+            <span className="text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full uppercase">Vencida</span>
+          ) : estado === "pendiente" ? (
+            <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full uppercase">Pendiente</span>
           ) : (
             <span className="text-[10px] font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full uppercase">Al Día</span>
           )
@@ -217,7 +244,7 @@ function ServiceCard({ tipo, aplica, cuenta, propertyId }: { tipo: 'agua' | 'luz
         {hasAccount ? (
           <>
             <p className="text-xs text-[#64748B] truncate">{cuenta.proveedor} · {cuenta.numero_cliente}</p>
-            <p className={`text-lg font-black mt-2 ${hasDebt ? "text-red-600" : "text-[#10B981]"}`}>
+            <p className={`text-lg font-black mt-2 ${amountColor}`}>
               {formatearCLP(cuenta.monto_deuda || 0)}
             </p>
             {(() => {
@@ -243,9 +270,9 @@ function ServiceCard({ tipo, aplica, cuenta, propertyId }: { tipo: 'agua' | 'luz
         ) : (
           <div className="pt-2 space-y-2">
             <p className="text-xs text-[#94A3B8]">Configura el número de cliente para activar el monitoreo.</p>
-            <UtilityAccountManager 
-              propertyId={propertyId} 
-              tipo={tipo} 
+            <UtilityAccountManager
+              propertyId={propertyId}
+              tipo={tipo}
               variant="button"
             />
           </div>
@@ -254,9 +281,9 @@ function ServiceCard({ tipo, aplica, cuenta, propertyId }: { tipo: 'agua' | 'luz
 
       {hasAccount && (
         <div className="absolute top-4 right-4">
-          <UtilityAccountManager 
-            propertyId={propertyId} 
-            tipo={tipo} 
+          <UtilityAccountManager
+            propertyId={propertyId}
+            tipo={tipo}
             variant="icon"
             existingAccount={cuenta}
           />
