@@ -33,15 +33,15 @@ export default async function ServiciosPage() {
   // Mocks para consistencia en la demo
   const mockPropiedades = [
     {
-      id: "1", direccion: "Av. Providencia 1234, Dpto 501", comuna: "Providencia", region: "Metropolitana",
+      id: "1", direccion: "Av. Providencia", numero: "1234", depto: "501", comuna: "Providencia", region: "Metropolitana",
       tiene_agua: true, tiene_luz: true, tiene_gas: false, utility_accounts: []
     },
     {
-      id: "2", direccion: "Los Leones 456, Casa 3", comuna: "Las Condes", region: "Metropolitana",
+      id: "2", direccion: "Los Leones", numero: "456", depto: null, comuna: "Las Condes", region: "Metropolitana",
       tiene_agua: true, tiene_luz: true, tiene_gas: true, utility_accounts: []
     },
     {
-      id: "3", direccion: "Ñuñoa 789, Dpto 302", comuna: "Ñuñoa", region: "Metropolitana",
+      id: "3", direccion: "Ñuñoa", numero: "789", depto: "302", comuna: "Ñuñoa", region: "Metropolitana",
       tiene_agua: true, tiene_luz: true, tiene_gas: false, utility_accounts: []
     },
   ];
@@ -113,7 +113,9 @@ export default async function ServiciosPage() {
                     <Building2 size={16} className="text-[#1E40AF]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-[#0F172A] text-sm leading-none">{prop.direccion}</h3>
+                    <h3 className="font-bold text-[#0F172A] text-sm leading-none">
+                      {prop.direccion}{prop.numero ? ` ${prop.numero}` : ""}{prop.depto ? `, Dpto ${prop.depto}` : ""}
+                    </h3>
                     <p className="text-[11px] text-[#64748B] mt-1 uppercase tracking-tight font-medium">{prop.comuna}, {prop.region}</p>
                   </div>
                 </div>

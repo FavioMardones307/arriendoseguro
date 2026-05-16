@@ -94,7 +94,7 @@ export default async function PropietarioDashboard() {
       if (Number(acc.monto_deuda) > 0) {
         alertas.push({
           id: acc.id,
-          mensaje: `Deuda detectada: ${acc.proveedor} (${acc.tipo}) — ${p.direccion} (${formatearCLP(acc.monto_deuda)})`,
+          mensaje: `Deuda detectada: ${acc.proveedor} (${acc.tipo}) — ${p.direccion}${p.numero ? ` ${p.numero}` : ""}${p.depto ? `, Dpto ${p.depto}` : ""} (${formatearCLP(acc.monto_deuda)})`,
           urgente: true
         });
       }
@@ -202,7 +202,9 @@ export default async function PropietarioDashboard() {
               {props.map((p: any) => (
                 <tr key={p.id} className="hover:bg-[#F8FAFC] transition-colors">
                   <td className="px-5 py-4">
-                    <p className="font-medium text-[#0F172A] leading-tight">{p.direccion}</p>
+                    <p className="font-medium text-[#0F172A] leading-tight">
+                      {p.direccion}{p.numero ? ` ${p.numero}` : ""}{p.depto ? `, Dpto ${p.depto}` : ""}
+                    </p>
                     <p className="text-xs text-[#94A3B8] mt-0.5">{p.comuna}</p>
                   </td>
                   <td className="px-5 py-4 text-right">

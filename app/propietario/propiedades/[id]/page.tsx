@@ -73,7 +73,9 @@ export default async function PropiedadDetailPage({ params }: { params: Promise<
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold uppercase rounded-full border border-white/30">
                   {propiedad.tipo}
                 </span>
-                <h1 className="text-2xl font-bold text-white mt-2">{propiedad.direccion}</h1>
+                <h1 className="text-2xl font-bold text-white mt-2">
+                  {propiedad.direccion}{propiedad.numero ? ` ${propiedad.numero}` : ""}{propiedad.depto ? `, Dpto ${propiedad.depto}` : ""}
+                </h1>
                 <p className="text-white/80 text-sm flex items-center gap-1">
                   <MapPin size={14} /> {propiedad.comuna}
                 </p>
