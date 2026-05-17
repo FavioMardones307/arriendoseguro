@@ -41,7 +41,7 @@ export default function HomePage() {
                 Soy propietario
                 <ArrowRight size={18} />
               </Link>
-              <Link href="/registro?rol=arrendatario" className="btn-secondary border-white text-white hover:bg-white hover:text-[#1E40AF] text-base px-8 py-4">
+              <Link href="/registro?rol=arrendatario" className="inline-flex items-center justify-center gap-2 text-base px-8 py-4 rounded-xl font-semibold border-2 border-white text-white bg-white/15 hover:bg-white hover:text-[#1E40AF] transition-all whitespace-nowrap">
                 Soy arrendatario
               </Link>
             </div>
@@ -373,7 +373,7 @@ export default function HomePage() {
             <Link href="/registro?rol=arrendador" className="btn-accent px-8 py-4 text-base">
               Soy propietario <ArrowRight size={18} />
             </Link>
-            <Link href="/registro?rol=arrendatario" className="btn-secondary border-white text-white hover:bg-white hover:text-[#1E40AF] px-8 py-4 text-base">
+            <Link href="/registro?rol=arrendatario" className="inline-flex items-center justify-center gap-2 text-base px-8 py-4 rounded-xl font-semibold border-2 border-white text-white bg-white/15 hover:bg-white hover:text-[#1E40AF] transition-all whitespace-nowrap">
               Soy arrendatario
             </Link>
           </div>
