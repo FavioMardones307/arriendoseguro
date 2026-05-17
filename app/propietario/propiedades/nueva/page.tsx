@@ -310,8 +310,15 @@ export default function NuevaPropiedadPage() {
                 <select name="proveedor_agua" className="input-base text-xs py-1.5">
                   <option value="">Proveedor...</option>
                   <option value="Aguas Andinas">Aguas Andinas</option>
+                  <option value="Aguas Cordillera">Aguas Cordillera</option>
+                  <option value="Aguas Manquehue">Aguas Manquehue</option>
                   <option value="Essbio">Essbio</option>
                   <option value="Esval">Esval</option>
+                  <option value="Aguas del Valle">Aguas del Valle</option>
+                  <option value="Aguas Antofagasta">Aguas Antofagasta</option>
+                  <option value="Aguas Araucanía">Aguas Araucanía</option>
+                  <option value="Aguas Magallanes">Aguas Magallanes</option>
+                  <option value="Nuevo Sur">Nuevo Sur</option>
                   <option value="Otro">Otro</option>
                 </select>
               </div>
@@ -332,9 +339,12 @@ export default function NuevaPropiedadPage() {
                 <select name="proveedor_luz" className="input-base text-xs py-1.5">
                   <option value="">Proveedor...</option>
                   <option value="Enel">Enel</option>
-                  <option value="CGE">CGE</option>
+                  <option value="CGE S.A.">CGE S.A.</option>
                   <option value="Chilquinta">Chilquinta</option>
                   <option value="Saesa">Saesa</option>
+                  <option value="Frontel">Frontel</option>
+                  <option value="Luz del Sur">Luz del Sur</option>
+                  <option value="Edelmag">Edelmag</option>
                   <option value="Otro">Otro</option>
                 </select>
               </div>
@@ -355,9 +365,10 @@ export default function NuevaPropiedadPage() {
                 <select name="proveedor_gas" className="input-base text-xs py-1.5">
                   <option value="">Proveedor...</option>
                   <option value="Metrogas">Metrogas</option>
-                  <option value="Gasco">Gasco</option>
-                  <option value="Abastible">Abastible</option>
                   <option value="Lipigas">Lipigas</option>
+                  <option value="Abastible">Abastible</option>
+                  <option value="Gasco">Gasco</option>
+                  <option value="GasSur">GasSur</option>
                   <option value="Otro">Otro</option>
                 </select>
               </div>
