@@ -215,7 +215,10 @@ export default async function PropietarioDashboard() {
                     </p>
                   </td>
                   <td className="px-5 py-4 text-center">
-                    <span className="badge badge-neutral">Sin contrato</span>
+                    {p.arrendado
+                      ? <span className="badge badge-success">Arrendada</span>
+                      : <span className="badge" style={{ background: "#DBEAFE", color: "#1E40AF", borderColor: "#BFDBFE" }}>Disponible</span>
+                    }
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-center gap-2">
