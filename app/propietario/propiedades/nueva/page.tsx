@@ -7,50 +7,136 @@ import { savePropertyAction } from "@/lib/actions/properties";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-const REGIONES_CHILE = [
-  "Arica y Parinacota", "Tarapacá", "Antofagasta", "Atacama",
-  "Coquimbo", "Valparaíso", "Metropolitana de Santiago",
-  "O'Higgins", "Maule", "Ñuble", "Biobío", "La Araucanía",
-  "Los Ríos", "Los Lagos", "Aysén", "Magallanes",
-];
+const COMUNAS_POR_REGION: Record<string, string[]> = {
+  "Arica y Parinacota": [
+    "Arica", "Camarones", "Putre", "General Lagos",
+  ],
+  "Tarapacá": [
+    "Iquique", "Alto Hospicio", "Pozo Almonte", "Camiña", "Colchane", "Huara", "Pica",
+  ],
+  "Antofagasta": [
+    "Antofagasta", "Mejillones", "Sierra Gorda", "Taltal",
+    "Calama", "Ollagüe", "San Pedro de Atacama",
+    "Tocopilla", "María Elena",
+  ],
+  "Atacama": [
+    "Copiapó", "Caldera", "Tierra Amarilla",
+    "Chañaral", "Diego de Almagro",
+    "Vallenar", "Alto del Carmen", "Freirina", "Huasco",
+  ],
+  "Coquimbo": [
+    "La Serena", "Coquimbo", "Andacollo", "La Higuera", "Paiguano", "Vicuña",
+    "Illapel", "Canela", "Los Vilos", "Salamanca",
+    "Ovalle", "Combarbalá", "Monte Patria", "Punitaqui", "Río Hurtado",
+  ],
+  "Valparaíso": [
+    "Valparaíso", "Casablanca", "Concón", "Juan Fernández", "Puchuncaví", "Quintero", "Viña del Mar",
+    "Isla de Pascua",
+    "Los Andes", "Calle Larga", "Rinconada", "San Esteban",
+    "La Ligua", "Cabildo", "Papudo", "Petorca", "Zapallar",
+    "Quillota", "Calera", "Hijuelas", "La Cruz", "Limache", "Nogales", "Olmué",
+    "San Antonio", "Algarrobo", "Cartagena", "El Quisco", "El Tabo", "Santo Domingo",
+    "San Felipe", "Catemu", "Llaillay", "Panquehue", "Putaendo", "Santa María",
+  ],
+  "Metropolitana de Santiago": [
+    "Santiago", "Cerrillos", "Cerro Navia", "Conchalí", "El Bosque", "Estación Central",
+    "Huechuraba", "Independencia", "La Cisterna", "La Florida", "La Granja", "La Pintana",
+    "La Reina", "Las Condes", "Lo Barnechea", "Lo Espejo", "Lo Prado", "Macul", "Maipú",
+    "Ñuñoa", "Pedro Aguirre Cerda", "Peñalolén", "Providencia", "Pudahuel", "Quilicura",
+    "Quinta Normal", "Recoleta", "Renca", "San Joaquín", "San Miguel", "San Ramón", "Vitacura",
+    "Puente Alto", "Pirque", "San José de Maipo",
+    "Colina", "Lampa", "Tiltil",
+    "San Bernardo", "Buin", "Calera de Tango", "Paine",
+    "Melipilla", "Alhué", "Curacaví", "María Pinto", "San Pedro",
+    "Talagante", "El Monte", "Isla de Maipo", "Padre Hurtado", "Peñaflor",
+  ],
+  "O'Higgins": [
+    "Rancagua", "Codegua", "Coinco", "Coltauco", "Doñihue", "Graneros", "Las Cabras",
+    "Machalí", "Malloa", "Mostazal", "Olivar", "Peumo", "Pichidegua", "Quinta de Tilcoco",
+    "Rengo", "Requínoa", "San Vicente",
+    "Pichilemu", "La Estrella", "Litueche", "Marchihue", "Navidad", "Paredones",
+    "San Fernando", "Chépica", "Chimbarongo", "Lolol", "Nancagua", "Palmilla",
+    "Peralillo", "Placilla", "Pumanque", "Santa Cruz",
+  ],
+  "Maule": [
+    "Talca", "Constitución", "Curepto", "Empedrado", "Maule", "Pelarco", "Pencahue",
+    "Río Claro", "San Clemente", "San Rafael",
+    "Cauquenes", "Chanco", "Pelluhue",
+    "Curicó", "Hualañé", "Licantén", "Molina", "Rauco", "Romeral", "Sagrada Familia", "Teno", "Vichuquén",
+    "Linares", "Colbún", "Longaví", "Parral", "Retiro", "San Javier", "Villa Alegre", "Yerbas Buenas",
+  ],
+  "Ñuble": [
+    "Chillán", "Bulnes", "Chillán Viejo", "El Carmen", "Pemuco", "Pinto", "Quillón", "San Ignacio", "Yungay",
+    "Cobquecura", "Coelemu", "Ninhue", "Portezuelo", "Quirihue", "Ránquil", "Trehuaco",
+    "Coihueco", "Ñiquén", "San Carlos", "San Fabián", "San Nicolás",
+  ],
+  "Biobío": [
+    "Concepción", "Coronel", "Chiguayante", "Florida", "Hualqui", "Lota", "Penco",
+    "San Pedro de la Paz", "Santa Juana", "Talcahuano", "Tomé", "Hualpén",
+    "Lebu", "Arauco", "Cañete", "Contulmo", "Curanilahue", "Los Álamos", "Tirúa",
+    "Los Ángeles", "Antuco", "Cabrero", "Laja", "Mulchén", "Nacimiento", "Negrete",
+    "Quilaco", "Quilleco", "San Rosendo", "Santa Bárbara", "Tucapel", "Yumbel", "Alto Biobío",
+  ],
+  "La Araucanía": [
+    "Temuco", "Carahue", "Cunco", "Curarrehue", "Freire", "Galvarino", "Gorbea",
+    "Lautaro", "Loncoche", "Melipeuco", "Nueva Imperial", "Padre Las Casas", "Perquenco",
+    "Pitrufquén", "Pucón", "Saavedra", "Teodoro Schmidt", "Toltén", "Vilcún", "Villarrica", "Cholchol",
+    "Angol", "Collipulli", "Curacautín", "Ercilla", "Lonquimay", "Los Sauces",
+    "Lumaco", "Purén", "Renaico", "Traiguén", "Victoria",
+  ],
+  "Los Ríos": [
+    "Valdivia", "Corral", "Futrono", "La Unión", "Lago Ranco", "Lanco",
+    "Los Lagos", "Máfil", "Mariquina", "Paillaco", "Panguipulli", "Río Bueno",
+  ],
+  "Los Lagos": [
+    "Puerto Montt", "Calbuco", "Cochamó", "Fresia", "Frutillar", "Los Muermos",
+    "Llanquihue", "Maullín", "Puerto Varas",
+    "Castro", "Ancud", "Chonchi", "Curaco de Vélez", "Dalcahue", "Puqueldón",
+    "Queilén", "Quellón", "Quemchi", "Quinchao",
+    "Osorno", "Puerto Octay", "Purranque", "Puyehue", "Río Negro", "San Juan de la Costa", "San Pablo",
+    "Chaitén", "Futaleufú", "Hualaihué", "Palena",
+  ],
+  "Aysén": [
+    "Coyhaique", "Lago Verde", "Aysén", "Cisnes", "Guaitecas",
+    "Cochrane", "O'Higgins", "Tortel",
+    "Chile Chico", "Río Ibáñez",
+  ],
+  "Magallanes": [
+    "Punta Arenas", "Laguna Blanca", "Río Verde", "San Gregorio",
+    "Cabo de Hornos", "Antártica",
+    "Porvenir", "Primavera", "Timaukel",
+    "Natales", "Torres del Paine",
+  ],
+};
 
 export default function NuevaPropiedadPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [moneda, setMoneda] = useState<"UF" | "CLP">("UF");
   const [valorRaw, setValorRaw] = useState("");
+  const [regionSeleccionada, setRegionSeleccionada] = useState("");
+  const [comunaSeleccionada, setComunaSeleccionada] = useState("");
 
-  // Formatear el valor mientras el usuario escribe
+  const comunasDisponibles = regionSeleccionada ? (COMUNAS_POR_REGION[regionSeleccionada] ?? []) : [];
+
   const valorFormateado = useMemo(() => {
     if (!valorRaw) return "";
-    
-    // Separamos la parte entera de la decimal si existe
     const [entera, decimal] = valorRaw.split(/[.,]/);
-    
-    // Formatear la parte entera con separador de miles
     const enteraFormateada = entera ? new Intl.NumberFormat("es-CL").format(parseInt(entera)) : "";
-    
-    if (moneda === "CLP") {
-      return enteraFormateada;
-    } else {
-      // Para UF, si hay una coma/punto, lo mostramos
-      const tieneSeparador = valorRaw.includes(".") || valorRaw.includes(",");
-      return tieneSeparador ? `${enteraFormateada},${decimal || ""}` : enteraFormateada;
-    }
+    if (moneda === "CLP") return enteraFormateada;
+    const tieneSeparador = valorRaw.includes(".") || valorRaw.includes(",");
+    return tieneSeparador ? `${enteraFormateada},${decimal || ""}` : enteraFormateada;
   }, [valorRaw, moneda]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    
     if (moneda === "CLP") {
-      // CLP: Solo números
       setValorRaw(val.replace(/\D/g, ""));
     } else {
-      // UF: Números y un solo separador decimal
       const sanitized = val.replace(/[^0-9.,]/g, "");
       const parts = sanitized.split(/[.,]/);
       if (parts.length > 2) {
-        setValorRaw(parts[0] + "," + parts[1]); // Solo permitimos un separador
+        setValorRaw(parts[0] + "," + parts[1]);
       } else {
         setValorRaw(sanitized);
       }
@@ -61,19 +147,13 @@ export default function NuevaPropiedadPage() {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
-    
     try {
       formData.append("moneda_seleccionada", moneda);
-      // Limpiamos el valor para el servidor (cambiamos coma por punto para que sea un número válido)
       const numericString = valorRaw.replace(",", ".");
       const numericValue = parseFloat(numericString);
-      
       if (isNaN(numericValue)) throw new Error("Valor de arriendo no es válido");
-      
       formData.append("valor_arriendo_numeric", numericValue.toString());
-      
       const result = await savePropertyAction(formData);
-      
       if (result.success) {
         toast.success("Propiedad registrada correctamente");
         router.push("/propietario/propiedades");
@@ -164,24 +244,43 @@ export default function NuevaPropiedadPage() {
           </div>
         </div>
 
-        {/* Comuna y Región */}
+        {/* Región y Comuna */}
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
+            <label htmlFor="prop-region" className="label">Región *</label>
+            <select
+              id="prop-region"
+              name="region"
+              className="input-base"
+              required
+              value={regionSeleccionada}
+              onChange={(e) => {
+                setRegionSeleccionada(e.target.value);
+                setComunaSeleccionada("");
+              }}
+            >
+              <option value="">Selecciona…</option>
+              {Object.keys(COMUNAS_POR_REGION).map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+          <div>
             <label htmlFor="prop-comuna" className="label">Comuna *</label>
-            <input
+            <select
               id="prop-comuna"
               name="comuna"
               className="input-base"
-              placeholder="Providencia"
               required
-            />
-          </div>
-          <div>
-            <label htmlFor="prop-region" className="label">Región *</label>
-            <select id="prop-region" name="region" className="input-base" required>
-              <option value="">Selecciona…</option>
-              {REGIONES_CHILE.map((r) => (
-                <option key={r} value={r}>{r}</option>
+              value={comunaSeleccionada}
+              onChange={(e) => setComunaSeleccionada(e.target.value)}
+              disabled={!regionSeleccionada}
+            >
+              <option value="">
+                {regionSeleccionada ? "Selecciona una comuna…" : "Primero selecciona una región"}
+              </option>
+              {comunasDisponibles.map((c) => (
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
@@ -238,14 +337,14 @@ export default function NuevaPropiedadPage() {
           <div className="flex items-center justify-between">
             <label className="label mb-0">Valor de arriendo *</label>
             <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-              <button 
+              <button
                 type="button"
                 onClick={() => { setMoneda("UF"); setValorRaw(""); }}
                 className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${moneda === "UF" ? "bg-white text-[#1E40AF] shadow-sm" : "text-[#64748B] hover:text-[#1E40AF]"}`}
               >
                 UF
               </button>
-              <button 
+              <button
                 type="button"
                 onClick={() => { setMoneda("CLP"); setValorRaw(""); }}
                 className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${moneda === "CLP" ? "bg-white text-[#1E40AF] shadow-sm" : "text-[#64748B] hover:text-[#1E40AF]"}`}
@@ -254,7 +353,7 @@ export default function NuevaPropiedadPage() {
               </button>
             </div>
           </div>
-          
+
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="relative group">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none border-r pr-2 border-slate-200 w-[75px]">
@@ -302,10 +401,10 @@ export default function NuevaPropiedadPage() {
                 <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Agua potable</span>
               </label>
               <div className="grid grid-cols-2 gap-3 pl-6">
-                <input 
-                  name="n_cliente_agua" 
-                  className="input-base text-xs py-1.5" 
-                  placeholder="Nº Cliente (opcional)" 
+                <input
+                  name="n_cliente_agua"
+                  className="input-base text-xs py-1.5"
+                  placeholder="Nº Cliente (opcional)"
                 />
                 <select name="proveedor_agua" className="input-base text-xs py-1.5">
                   <option value="">Proveedor...</option>
@@ -345,10 +444,10 @@ export default function NuevaPropiedadPage() {
                 <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Energía eléctrica</span>
               </label>
               <div className="grid grid-cols-2 gap-3 pl-6">
-                <input 
-                  name="n_cliente_luz" 
-                  className="input-base text-xs py-1.5" 
-                  placeholder="Nº Cliente (opcional)" 
+                <input
+                  name="n_cliente_luz"
+                  className="input-base text-xs py-1.5"
+                  placeholder="Nº Cliente (opcional)"
                 />
                 <select name="proveedor_luz" className="input-base text-xs py-1.5">
                   <option value="">Proveedor...</option>
@@ -379,10 +478,10 @@ export default function NuevaPropiedadPage() {
                 <span className="text-sm font-medium text-[#334155] group-hover:text-[#1E40AF]">Gas (por cañería o Red)</span>
               </label>
               <div className="grid grid-cols-2 gap-3 pl-6">
-                <input 
-                  name="n_cliente_gas" 
-                  className="input-base text-xs py-1.5" 
-                  placeholder="Nº Cliente (opcional)" 
+                <input
+                  name="n_cliente_gas"
+                  className="input-base text-xs py-1.5"
+                  placeholder="Nº Cliente (opcional)"
                 />
                 <select name="proveedor_gas" className="input-base text-xs py-1.5">
                   <option value="">Proveedor...</option>
@@ -426,8 +525,8 @@ export default function NuevaPropiedadPage() {
           >
             Cancelar
           </Link>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="btn-primary flex-1 justify-center py-3"
           >
