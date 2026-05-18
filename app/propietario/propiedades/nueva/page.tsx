@@ -312,13 +312,27 @@ export default function NuevaPropiedadPage() {
                   <option value="Aguas Andinas">Aguas Andinas</option>
                   <option value="Aguas Cordillera">Aguas Cordillera</option>
                   <option value="Aguas Manquehue">Aguas Manquehue</option>
-                  <option value="Essbio">Essbio</option>
-                  <option value="Esval">Esval</option>
+                  <option value="Aguas Santiago Norte">Aguas Santiago Norte</option>
+                  <option value="Aguas Santiago Poniente">Aguas Santiago Poniente</option>
                   <option value="Aguas del Valle">Aguas del Valle</option>
-                  <option value="Aguas Antofagasta">Aguas Antofagasta</option>
                   <option value="Aguas Araucanía">Aguas Araucanía</option>
                   <option value="Aguas Magallanes">Aguas Magallanes</option>
-                  <option value="Nuevo Sur">Nuevo Sur</option>
+                  <option value="Aguas Antofagasta">Aguas Antofagasta</option>
+                  <option value="Aguas del Altiplano">Aguas del Altiplano</option>
+                  <option value="Aguas San Pedro">Aguas San Pedro</option>
+                  <option value="Aguas Décima">Aguas Décima</option>
+                  <option value="Aguas Sepra">Aguas Sepra</option>
+                  <option value="Aguas Izarra">Aguas Izarra</option>
+                  <option value="Esval">Esval</option>
+                  <option value="Essbio">Essbio</option>
+                  <option value="NuevoSur">NuevoSur</option>
+                  <option value="SURALIS (ex Essal)">SURALIS (ex Essal)</option>
+                  <option value="Nueva Atacama">Nueva Atacama</option>
+                  <option value="Cossbo">Cossbo</option>
+                  <option value="Coopagua Santo Domingo">Coopagua Santo Domingo</option>
+                  <option value="Sacyr Agua Metropolitana">Sacyr Agua Metropolitana</option>
+                  <option value="Sacyr Agua Lampa">Sacyr Agua Lampa</option>
+                  <option value="Sacyr Agua Utilities">Sacyr Agua Utilities</option>
                   <option value="Otro">Otro</option>
                 </select>
               </div>
@@ -343,8 +357,16 @@ export default function NuevaPropiedadPage() {
                   <option value="Chilquinta">Chilquinta</option>
                   <option value="Saesa">Saesa</option>
                   <option value="Frontel">Frontel</option>
-                  <option value="Luz del Sur">Luz del Sur</option>
                   <option value="Edelmag">Edelmag</option>
+                  <option value="Edelaysen">Edelaysen</option>
+                  <option value="Luz Osorno">Luz Osorno</option>
+                  <option value="Luz Linares">Luz Linares</option>
+                  <option value="Luz Parral">Luz Parral</option>
+                  <option value="Litoral">Litoral</option>
+                  <option value="Energía Casablanca">Energía Casablanca</option>
+                  <option value="Emelca">Emelca</option>
+                  <option value="CEC Coop. Eléctrica Curicó">CEC Coop. Eléctrica Curicó</option>
+                  <option value="EEPA">EEPA</option>
                   <option value="Otro">Otro</option>
                 </select>
               </div>
@@ -365,10 +387,15 @@ export default function NuevaPropiedadPage() {
                 <select name="proveedor_gas" className="input-base text-xs py-1.5">
                   <option value="">Proveedor...</option>
                   <option value="Metrogas">Metrogas</option>
-                  <option value="Lipigas">Lipigas</option>
-                  <option value="Abastible">Abastible</option>
                   <option value="Gasco">Gasco</option>
-                  <option value="GasSur">GasSur</option>
+                  <option value="Gasco Magallanes">Gasco Magallanes</option>
+                  <option value="Gasvalpo">Gasvalpo</option>
+                  <option value="Lipigas Granel">Lipigas Granel</option>
+                  <option value="Lipigas Medidor">Lipigas Medidor</option>
+                  <option value="Abastible Boleta">Abastible Boleta</option>
+                  <option value="Abastible Factura">Abastible Factura</option>
+                  <option value="Gas Sur">Gas Sur</option>
+                  <option value="Energas">Energas</option>
                   <option value="Otro">Otro</option>
                 </select>
               </div>

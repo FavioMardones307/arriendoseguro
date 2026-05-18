@@ -11,16 +11,26 @@ import { toast } from "sonner";
 
 const PROVEEDORES_POR_TIPO: Record<string, string[]> = {
   agua: [
-    "Aguas Andinas", "Aguas Cordillera", "Aguas Manquehue", 
-    "Essbio", "Esval", "Aguas del Valle", "Aguas Antofagasta", 
-    "Aguas Araucanía", "Aguas Magallanes", "Nuevo Sur"
+    "Aguas Andinas", "Aguas Cordillera", "Aguas Manquehue",
+    "Aguas Santiago Norte", "Aguas Santiago Poniente",
+    "Aguas del Valle", "Aguas Araucanía", "Aguas Magallanes",
+    "Aguas Antofagasta", "Aguas del Altiplano", "Aguas San Pedro",
+    "Aguas Décima", "Aguas Sepra", "Aguas Izarra",
+    "Esval", "Essbio", "NuevoSur", "SURALIS (ex Essal)",
+    "Nueva Atacama", "Cossbo", "Coopagua Santo Domingo",
+    "Sacyr Agua Metropolitana", "Sacyr Agua Lampa", "Sacyr Agua Utilities",
   ],
   luz: [
-    "Enel", "CGE S.A.", "Chilquinta", "Saesa", "Frontel", 
-    "Luz del Sur", "Edelmag"
+    "Enel", "CGE S.A.", "Chilquinta", "Saesa", "Frontel",
+    "Edelmag", "Edelaysen", "Luz Osorno", "Luz Linares", "Luz Parral",
+    "Litoral", "Energía Casablanca", "Emelca",
+    "CEC Coop. Eléctrica Curicó", "EEPA",
   ],
   gas: [
-    "Metrogas", "Lipigas", "Abastible", "Gasco", "GasSur"
+    "Metrogas", "Gasco", "Gasco Magallanes", "Gasvalpo",
+    "Lipigas Granel", "Lipigas Medidor",
+    "Abastible Boleta", "Abastible Factura",
+    "Gas Sur", "Energas",
   ]
 };
 
