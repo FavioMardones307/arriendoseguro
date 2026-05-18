@@ -215,10 +215,19 @@ export default async function PropietarioDashboard() {
                     </p>
                   </td>
                   <td className="px-5 py-4 text-center">
-                    {p.tiene_contrato
-                      ? <span className="badge badge-success">Arrendada</span>
-                      : <span className="badge" style={{ background: "#DBEAFE", color: "#1E40AF", borderColor: "#BFDBFE" }}>Disponible</span>
-                    }
+                    {p.tiene_contrato ? (
+                      <span className="badge badge-success">Arrendada</span>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1.5">
+                        <span className="badge" style={{ background: "#DBEAFE", color: "#1E40AF", borderColor: "#BFDBFE" }}>Disponible</span>
+                        <Link
+                          href={`/propietario/propiedades/${p.id}#arrendatario`}
+                          className="text-[10px] font-bold text-[#1E40AF] hover:underline flex items-center gap-0.5"
+                        >
+                          + Invitar
+                        </Link>
+                      </div>
+                    )}
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-center gap-2">

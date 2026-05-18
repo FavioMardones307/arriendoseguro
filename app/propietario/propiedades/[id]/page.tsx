@@ -135,7 +135,7 @@ export default async function PropiedadDetailPage({ params }: { params: Promise<
           </div>
 
           {/* Arrendatario Info */}
-          <div className="card">
+          <div id="arrendatario" className="card">
             <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-4">Información de Arriendo</h3>
             {propiedad.tiene_contrato ? (
               <div className="flex items-center gap-4">
